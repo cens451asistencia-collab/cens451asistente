@@ -477,13 +477,13 @@ body{font-family:'DM Sans',sans-serif;background:#f0f4fa;color:var(--ink);min-he
       <h4>⭐ Sede Central</h4>
       <p><b>Camacuá 3407</b><br>Villa Luzuriaga · La Matanza</p>
       <div style="margin-top:8px">
-        <span class="chip">Villa Luzuriaga</span><span class="chip">Villa Madero</span><span class="chip">Aldo Bonzi</span><span class="chip">Tapiales</span><span class="chip">Ciudad Evita</span>
+        <span class="chip">Villa Luzuriaga</span><span class="chip">Ramos Mejía</span><span class="chip">San Justo</span>
       </div>
     </div>
     <div class="sede-card">
       <h4>📍 Anexo Veteranos</h4>
       <p><b>Bolívar 1682</b><br>Ramos Mejía · La Matanza</p>
-      <div style="margin-top:8px"><span class="chip">Ramos Mejía</span><span class="chip">La Tablada</span></div>
+      <div style="margin-top:8px"><span class="chip">Ramos Mejía</span><span class="chip">Morón</span><span class="chip">Haedo</span><span class="chip">San Justo</span></div>
     </div>
     <div class="sede-card">
       <h4>📍 Anexo Torero</h4>
@@ -493,12 +493,12 @@ body{font-family:'DM Sans',sans-serif;background:#f0f4fa;color:var(--ink);min-he
     <div class="sede-card">
       <h4>📍 Anexo Atalaya</h4>
       <p><b>Del Bañado 10</b><br>Rafael Castillo · La Matanza</p>
-      <div style="margin-top:8px"><span class="chip">Rafael Castillo</span><span class="chip">Virrey del Pino</span></div>
+      <div style="margin-top:8px"><span class="chip">Isidro Casanova</span></div>
     </div>
     <div class="sede-card">
       <h4>📍 Anexo Canadá</h4>
       <p><b>Canadá 4664</b><br>San Justo · La Matanza</p>
-      <div style="margin-top:8px"><span class="chip">San Justo</span><span class="chip">González Catán</span><span class="chip">Laferrere</span></div>
+      <div style="margin-top:8px"><span class="chip">San Justo</span><span class="chip">Laferrere</span><span class="chip">Ciudad Evita</span><span class="chip">Isidro Casanova</span><span class="chip">Gregorio de Laferrere</span></div>
     </div>
   </div>
   <div style="margin-top:20px;background:#fff;border-radius:14px;padding:18px;box-shadow:var(--sh);border:1px solid var(--slate3);max-width:900px">
@@ -651,7 +651,7 @@ function getReply(msg){
     var docs=CFG.documentos||['DNI (original y fotocopia)','Certificado de estudios previos','2 fotos 4x4','Constancia de domicilio'];
     return 'Para inscribirte necesitás:<br>'+docs.map(function(d){return'📄 '+d}).join('<br>')+(CFG.docsExtra?'<br><br>ℹ️ '+CFG.docsExtra:'');
   }
-  if(m.includes('gratis')||m.includes('costo')||m.includes('pago')||m.includes('arancel')){
+  if(m.includes('gratis')||m.includes('gratuito')||m.includes('costo')||m.includes('pago')||m.includes('arancel')||m.includes('cobran')||m.includes('plata')){
     return '✅ El CENS 451 es completamente <b>gratuito</b>. Es una institución pública del Estado argentino. No hay ningún arancel.';
   }
   if(m.includes('analitico')||m.includes('titulo')||m.includes('tramit')){
