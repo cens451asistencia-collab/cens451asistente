@@ -640,7 +640,7 @@ function getReply(msg){
     var docs=CFG.documentos||['DNI (original y fotocopia)','Certificado de estudios previos','2 fotos 4x4','Constancia de domicilio'];
     return 'Para inscribirte necesitás:<br>'+docs.map(function(d){return'📄 '+d}).join('<br>')+(CFG.docsExtra?'<br><br>ℹ️ '+CFG.docsExtra:'');
   }
-  if(m.includes('gratis')||m.includes('costo')||m.includes('pago')||m.includes('arancel')){
+  if(m.includes('gratis')||m.includes('gratuito')||m.includes('costo')||m.includes('pago')||m.includes('arancel')){
     return '✅ El CENS 451 es completamente <b>gratuito</b>. Es una institución pública del Estado argentino. No hay ningún arancel.';
   }
   if(m.includes('analitico')||m.includes('titulo')||m.includes('tramit')){
