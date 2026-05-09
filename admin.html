@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Panel Directivo · CENS 451</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --navy:#0f2546;--blue:#1a4fa0;--blue2:#2563eb;--sky:#dbeafe;--sky2:#eff6ff;
+  --gold:#c9a84c;--gold2:#fdf3dc;
+  --green:#059669;--green2:#d1fae5;
+  --slate:#64748b;--slate2:#f1f5f9;--slate3:#e2e8f0;--slate4:#94a3b8;
+  --white:#fff;--ink:#0f172a;--ink2:#334155;
+  --r:14px;--sh:0 4px 24px rgba(15,37,70,.09);
+  --role-color:#1a4fa0;
+}
+body{font-family:'DM Sans',sans-serif;background:#eef2f8;color:var(--ink);min-height:100vh}
+
+/* ── LOGIN ── */
+#loginScreen{position:fixed;inset:0;background:linear-gradient(140deg,var(--navy) 0%,#1a3a7a 60%,#1e4db7 100%);display:flex;align-items:center;justify-content:center;z-index:1000}
+.login-card{background:#fff;border-radius:20px;padding:40px;width:420px;box-shadow:0 20px 60px rgba(0,0,0,.3)}
+.login-logo{display:flex;align-items:center;gap:12px;margin-bottom:28px}
+.login-seal{width:48px;height:48px;background:var(--gold);border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.login-seal span{font-family:'Space Mono',monospace;font-size:10px;font-weight:700;color:var(--navy);line-height:1.1}
+.login-title{font-family:'DM Serif Display',serif;font-size:22px;color:var(--navy)}
+.login-sub{font-size:13px;color:var(--slate);margin-top:2px}
+.role-select{margin-bottom:20px}
+.role-select label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--slate);display:block;margin-bottom:8px}
+.role-btns{display:flex;flex-direction:column;gap:8px}
+.rbtn{padding:11px 16px;border-radius:10px;border:2px solid var(--slate3);background:#fff;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;text-align:left;transition:.18s;display:flex;align-items:center;gap:10px;color:var(--ink2)}
+.rbtn:hover,.rbtn.sel{border-color:var(--blue2);background:var(--sky2);color:var(--blue2)}
+.lf{display:flex;flex-direction:column;gap:4px;margin-bottom:14px}
+.lf label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--slate)}
+.lf input{border:1.5px solid var(--slate3);border-radius:8px;padding:10px 13px;font-family:'DM Sans',sans-serif;font-size:14px;outline:none;transition:.2s}
+.lf input:focus{border-color:var(--blue2)}
+.btn-login{background:var(--navy);color:#fff;border:none;border-radius:10px;padding:12px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:700;cursor:pointer;width:100%;margin-top:4px;transition:.2s}
+.btn-login:hover{background:var(--blue2)}
+.login-err{background:#fee2e2;border:1px solid #fca5a5;border-radius:8px;padding:9px 12px;font-size:12px;color:#991b1b;display:none;margin-top:10px}
+
+/* ── SHELL ── */
+#shell{display:none}
+.sidebar{width:240px;background:var(--navy);min-height:100vh;position:fixed;left:0;top:0;display:flex;flex-direction:column}
+.sb-brand{padding:20px 18px 16px;border-bottom:1px solid rgba(255,255,255,.08)}
+.sb-seal{display:flex;align-items:center;gap:10px}
+.sb-seal-ico{width:36px;height:36px;background:var(--gold);border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.sb-seal-ico span{font-family:'Space Mono',monospace;font-size:8px;font-weight:700;color:var(--navy);line-height:1.1}
+.sb-name{color:#fff;font-size:14px;font-weight:700;line-height:1.2}
+.sb-name small{font-size:10px;font-weight:400;opacity:.6;display:block}
+.sb-role-badge{margin:12px 14px 0;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:8px;padding:7px 12px;font-size:11px;color:rgba(255,255,255,.8);font-weight:600}
+.sb-role-badge .dot{width:6px;height:6px;border-radius:50%;display:inline-block;margin-right:6px}
+.sb-nav{padding:12px 10px;flex:1}
+.sb-section{font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:rgba(255,255,255,.35);padding:12px 8px 6px}
+.sbi{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:9px;color:rgba(255,255,255,.65);font-size:13px;font-weight:500;cursor:pointer;transition:.18s;margin-bottom:2px}
+.sbi:hover,.sbi.active{background:rgba(255,255,255,.1);color:#fff}
+.sbi .ic{font-size:16px;width:20px;text-align:center}
+.sb-foot{padding:14px;border-top:1px solid rgba(255,255,255,.08)}
+.sb-user{font-size:12px;color:rgba(255,255,255,.5)}
+.sb-user b{color:rgba(255,255,255,.8);display:block;font-size:13px}
+.logout-btn{background:rgba(255,255,255,.07);border:none;color:rgba(255,255,255,.5);padding:6px 12px;border-radius:7px;font-family:'DM Sans',sans-serif;font-size:11px;cursor:pointer;margin-top:8px;width:100%;transition:.2s}
+.logout-btn:hover{background:rgba(255,255,255,.13);color:#fff}
+
+/* ── MAIN ── */
+.main{margin-left:240px;min-height:100vh}
+.topbar{background:#fff;border-bottom:1px solid var(--slate3);padding:0 28px;height:56px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50}
+.topbar h2{font-size:18px;font-weight:700;color:var(--ink)}
+.topbar p{font-size:12px;color:var(--slate)}
+.toast{background:var(--green2);border:1px solid #a7f3d0;color:#065f46;border-radius:8px;padding:7px 16px;font-size:12px;font-weight:700;display:none}
+.content{padding:24px 28px}
+
+/* ── PANEL ── */
+.panel{display:none}
+.panel.on{display:block}
+.prow{display:grid;gap:18px;margin-bottom:18px}
+.prow-2{grid-template-columns:1fr 1fr}
+.prow-3{grid-template-columns:1fr 1fr 1fr}
+.card{background:#fff;border-radius:var(--r);box-shadow:var(--sh);border:1px solid var(--slate3);padding:22px}
+.card h3{font-size:14px;font-weight:700;margin-bottom:3px;color:var(--ink)}
+.card .desc{font-size:12px;color:var(--slate);margin-bottom:16px}
+.stat-big{font-family:'DM Serif Display',serif;font-size:42px;color:var(--blue2)}
+.stat-lbl{font-size:11px;color:var(--slate);font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-top:2px}
+
+/* ── CAMPOS ── */
+.cf{display:flex;flex-direction:column;gap:3px;margin-bottom:12px}
+.cf label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--slate)}
+.cf input,.cf select,.cf textarea{border:1.5px solid var(--slate3);border-radius:8px;padding:9px 12px;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--ink);outline:none;transition:.2s;background:#fff;width:100%}
+.cf input:focus,.cf select:focus,.cf textarea:focus{border-color:var(--blue2);box-shadow:0 0 0 3px rgba(37,99,235,.06)}
+.cf textarea{resize:vertical;min-height:64px}
+.cf2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.btn-s{background:var(--navy);color:#fff;border:none;border-radius:8px;padding:9px 20px;font-family:'DM Sans',sans-serif;font-weight:700;font-size:12px;cursor:pointer;transition:.2s;display:inline-block}
+.btn-s:hover{background:var(--blue2)}
+.btn-s.green{background:var(--green)}
+.btn-s.gold{background:var(--gold);color:var(--navy)}
+.btn-add{background:var(--slate2);color:var(--ink2);border:1.5px dashed var(--slate3);border-radius:8px;padding:7px 14px;font-family:'DM Sans',sans-serif;font-weight:700;font-size:12px;cursor:pointer;width:100%;margin-top:8px}
+
+/* Item removible */
+.ri{background:var(--slate2);border-radius:8px;padding:11px 13px;margin-bottom:8px;position:relative;display:flex;gap:10px;align-items:center}
+.ri input,.ri textarea{border:1.5px solid var(--slate3);border-radius:6px;padding:7px 10px;font-family:'DM Sans',sans-serif;font-size:12px;outline:none;background:#fff;flex:1}
+.ri input:focus{border-color:var(--blue2)}
+.ri-del{background:#fee2e2;color:#991b1b;border:none;border-radius:5px;padding:5px 9px;font-size:11px;font-weight:700;cursor:pointer;flex-shrink:0}
+.faq-item{background:var(--slate2);border-radius:10px;padding:13px;margin-bottom:10px;position:relative}
+.faq-item label{font-size:10px;font-weight:700;text-transform:uppercase;color:var(--blue2);letter-spacing:.5px;display:block;margin-bottom:4px}
+.faq-item input,.faq-item textarea{width:100%;border:1.5px solid var(--slate3);border-radius:6px;padding:7px 10px;font-family:'DM Sans',sans-serif;font-size:12px;outline:none;background:#fff;margin-bottom:7px}
+.faq-item textarea{min-height:52px;resize:vertical}
+.faq-del{position:absolute;top:10px;right:10px;background:#fee2e2;color:#991b1b;border:none;border-radius:5px;padding:3px 8px;font-size:10px;font-weight:700;cursor:pointer}
+
+/* Upload zone */
+.upzone{border:2px dashed var(--slate3);border-radius:10px;padding:26px;text-align:center;cursor:pointer;transition:.2s;background:var(--slate2)}
+.upzone:hover{border-color:var(--blue2);background:var(--sky2)}
+.upzone .up-ico{font-size:34px;margin-bottom:6px}
+.upzone p{font-size:12px;color:var(--slate)}
+.upzone input{display:none}
+.up-info{font-size:12px;color:var(--blue2);font-weight:700;margin-top:8px}
+
+/* Tabla */
+.tbl-wrap{overflow-x:auto;margin-top:10px}
+.tbl{width:100%;border-collapse:collapse;font-size:12px}
+.tbl th{background:var(--navy);color:#fff;padding:8px 10px;text-align:left;font-weight:700;font-size:10px;text-transform:uppercase}
+.tbl td{padding:8px 10px;border-bottom:1px solid var(--slate3);color:var(--ink2)}
+.tbl tr:hover td{background:var(--slate2)}
+.badge{display:inline-block;padding:3px 9px;border-radius:20px;font-size:10px;font-weight:700}
+.b-dir{background:#dbeafe;color:#1e40af}
+.b-pre{background:#fef3c7;color:#92400e}
+.b-doc{background:#d1fae5;color:#065f46}
+
+/* Archivo docente item */
+.arch-item{display:flex;gap:8px;align-items:center;margin-bottom:8px}
+.arch-item input{flex:1;border:1.5px solid var(--slate3);border-radius:6px;padding:7px 10px;font-family:'DM Sans',sans-serif;font-size:12px;outline:none;background:#fff}
+.arch-item input:focus{border-color:var(--blue2)}
+.arch-del{background:#fee2e2;color:#991b1b;border:none;border-radius:5px;padding:5px 8px;font-size:10px;font-weight:700;cursor:pointer}
+
+/* Stats row */
+.stats-mini{display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap}
+.sm{background:var(--slate2);border-radius:10px;padding:12px 16px;flex:1;min-width:100px}
+.sm .n{font-size:28px;font-weight:900;color:var(--blue2);font-family:'DM Serif Display',serif}
+.sm .l{font-size:10px;color:var(--slate);font-weight:700;text-transform:uppercase;letter-spacing:.4px}
+</style>
+</head>
+<body>
+
+<!-- ── LOGIN ── -->
+<div id="loginScreen">
+  <div class="login-card">
+    <div class="login-logo">
+      <div class="login-seal"><span>CENS</span><span>451</span></div>
+      <div>
+        <div class="login-title">Panel Directivo</div>
+        <div class="login-sub">CENS 451 · La Matanza</div>
+      </div>
+    </div>
+
+    <div class="role-select">
+      <label>Ingresá como:</label>
+      <div class="role-btns">
+        <button class="rbtn sel" onclick="selRole('directivo',this)">🏫 Director/a — Acceso completo</button>
+        <button class="rbtn" onclick="selRole('preceptor',this)">📋 Preceptor/a — Ver informes</button>
+        <button class="rbtn" onclick="selRole('docente',this)">👩‍🏫 Docente — Recursos y archivos</button>
+      </div>
+    </div>
+
+    <div class="lf"><label>Usuario</label><input type="text" id="lu" placeholder="usuario"></div>
+    <div class="lf"><label>Contraseña</label><input type="password" id="lp" placeholder="••••••" onkeydown="if(event.key==='Enter')doLogin()"></div>
+    <button class="btn-login" onclick="doLogin()">Ingresar →</button>
+    <div class="login-err" id="lErr">Usuario o contraseña incorrectos.</div>
+    <p style="font-size:11px;color:var(--slate4);margin-top:14px;text-align:center">Demo: usuario <b>admin</b> · contraseña <b>cens451</b></p>
+  </div>
+</div>
+
+<!-- ── SHELL ── -->
+<div id="shell">
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <div class="sb-brand">
+      <div class="sb-seal">
+        <div class="sb-seal-ico"><span>CENS</span><span>451</span></div>
+        <div class="sb-name">Panel Directivo <small>La Matanza</small></div>
+      </div>
+      <div class="sb-role-badge" id="sbRoleBadge"><span class="dot" id="roleDot" style="background:#22c55e"></span><span id="roleLabel">Director/a</span></div>
+    </div>
+
+    <nav class="sb-nav" id="sbNav">
+      <!-- se rellena por JS según rol -->
+    </nav>
+
+    <div class="sb-foot">
+      <div class="sb-user"><b id="sbUser">Director/a</b>CENS 451 · La Matanza</div>
+      <button class="logout-btn" onclick="logout()">← Cerrar sesión</button>
+    </div>
+  </div>
+
+  <!-- MAIN -->
+  <div class="main">
+    <div class="topbar">
+      <div><h2 id="topTitle">Dashboard</h2><p id="topSub">Resumen general</p></div>
+      <div id="toastEl" class="toast"></div>
+    </div>
+
+    <div class="content">
+
+      <!-- ────── PANEL: DASHBOARD ────── -->
+      <div id="pan-dashboard" class="panel on">
+        <div class="prow prow-3">
+          <div class="card" style="text-align:center">
+            <div class="stat-big" id="ds-inscr">0</div>
+            <div class="stat-lbl">Preinscripciones</div>
+          </div>
+          <div class="card" style="text-align:center">
+            <div class="stat-big" id="ds-parc">0</div>
+            <div class="stat-lbl">Analíticos Parciales</div>
+          </div>
+          <div class="card" style="text-align:center">
+            <div class="stat-big" id="ds-final">0</div>
+            <div class="stat-lbl">Analíticos Finales</div>
+          </div>
+        </div>
+        <div class="card">
+          <h3>📋 Últimas preinscripciones</h3>
+          <p class="desc">Los 10 registros más recientes.</p>
+          <div class="tbl-wrap" id="dashTable"><p style="font-size:13px;color:var(--slate)">No hay preinscripciones aún.</p></div>
+        </div>
+      </div>
+
+      <!-- ────── PANEL: INFO INSTITUCIONAL ────── -->
+      <div id="pan-info" class="panel">
+        <div class="card">
+          <h3>📌 Información institucional</h3>
+          <p class="desc">Todo lo que configures aquí, Valeria lo usa automáticamente en el chat público.</p>
+          <div class="cf2">
+            <div class="cf"><label>Nombre del CENS</label><input id="ci-nombre" value="CENS 451 La Matanza"></div>
+            <div class="cf"><label>Período de inscripción</label><input id="ci-periodo" value="Todo el año con cupo disponible"></div>
+            <div class="cf"><label>Teléfono / WhatsApp</label><input id="ci-tel" value="11 5312 6676"></div>
+            <div class="cf"><label>Email de contacto</label><input id="ci-email" placeholder="cens451@abc.gob.ar"></div>
+            <div class="cf"><label>Instagram</label><input id="ci-ig" value="Cens.451"></div>
+            <div class="cf"><label>Sitio web (opcional)</label><input id="ci-web" placeholder="www.cens451.edu.ar"></div>
+          </div>
+          <div class="cf"><label>Descripción corta (aparece en el hero del sitio)</label>
+            <textarea id="ci-desc">Educación secundaria para adultos. Horarios pensados para trabajadores y familias. Docentes comprometidos. Tres sedes en La Matanza.</textarea>
+          </div>
+          <button class="btn-s" onclick="saveInfo()">💾 Guardar información</button>
+        </div>
+      </div>
+
+      <!-- ────── PANEL: HORARIOS ────── -->
+      <div id="pan-horarios" class="panel">
+        <div class="card">
+          <h3>⏰ Horarios y turnos</h3>
+          <p class="desc">Valeria usa estos horarios cuando le pregunten. Podés agregar, editar o quitar turnos.</p>
+          <div id="turnosList">
+            <div class="ri"><input class="tn" placeholder="Nombre (ej: Tarde)" value="Tarde"><input class="th" placeholder="Horario" value="14:00 a 18:00 hs" style="max-width:160px"><input class="td" placeholder="Días" value="Lunes a viernes"><button class="ri-del" onclick="this.parentElement.remove()">✕</button></div>
+            <div class="ri"><input class="tn" placeholder="Nombre" value="Noche"><input class="th" placeholder="Horario" value="18:00 a 22:00 hs" style="max-width:160px"><input class="td" placeholder="Días" value="Lunes a viernes"><button class="ri-del" onclick="this.parentElement.remove()">✕</button></div>
+          </div>
+          <button class="btn-add" onclick="addTurno()">+ Agregar turno</button>
+          <div class="cf" style="margin-top:14px"><label>Información adicional (ej: clases de apoyo, feriados)</label><textarea id="horExtra" placeholder="Ej: Los sábados hay clases de apoyo de 9 a 12 hs..."></textarea></div>
+          <button class="btn-s" onclick="saveHorarios()">💾 Guardar horarios</button>
+        </div>
+      </div>
+
+      <!-- ────── PANEL: DOCUMENTOS ────── -->
+      <div id="pan-docs" class="panel">
+        <div class="card">
+          <h3>📄 Documentos requeridos</h3>
+          <p class="desc">Listado que Valeria menciona cuando un futuro alumno pregunta qué documentos necesita para inscribirse.</p>
+          <div id="docsList">
+            <div class="ri"><input value="DNI (original y fotocopia)"><button class="ri-del" onclick="this.parentElement.remove()">✕</button></div>
+            <div class="ri"><input value="Certificado de estudios previos (primaria completa o constancia de secundaria incompleta)"><button class="ri-del" onclick="this.parentElement.remove()">✕</button></div>
+            <div class="ri"><input value="2 fotos tamaño 4x4"><button class="ri-del" onclick="this.parentElement.remove()">✕</button></div>
+            <div class="ri"><input value="Constancia de domicilio (factura de servicio o certificado policial)"><button class="ri-del" onclick="this.parentElement.remove()">✕</button></div>
+          </div>
+          <button class="btn-add" onclick="addDoc()">+ Agregar documento</button>
+          <div class="cf" style="margin-top:14px"><label>Observación adicional</label><textarea id="docsExtra" placeholder="Ej: En caso de no tener el certificado, consultar en secretaría..."></textarea></div>
+          <button class="btn-s" onclick="saveDocs()">💾 Guardar</button>
+        </div>
+      </div>
+
+      <!-- ────── PANEL: PREGUNTAS FRECUENTES ────── -->
+      <div id="pan-faq" class="panel">
+        <div class="card">
+          <h3>💬 Preguntas frecuentes — Valeria</h3>
+          <p class="desc">Valeria detecta palabras clave en el mensaje del alumno y responde con el texto que configurás acá. Podés usar &lt;b&gt;negrita&lt;/b&gt; en las respuestas.</p>
+          <div id="faqList"></div>
+          <button class="btn-add" onclick="addFAQ()">+ Agregar pregunta frecuente</button>
+          <button class="btn-s" style="margin-top:10px" onclick="saveFAQ()">💾 Guardar FAQ</button>
+        </div>
+      </div>
+
+      <!-- ────── PANEL: RECURSOS DOCENTES ────── -->
+      <div id="pan-recursos" class="panel">
+        <div class="card">
+          <h3>👩‍🏫 Links para docentes</h3>
+          <p class="desc">Valeria usa estos links cuando un docente pregunta sobre proyecto anual o actualización de datos.</p>
+          <div class="cf2">
+            <div class="cf"><label>Link — Proyecto Anual</label><input id="rc-proyecto" placeholder="https://forms.google.com/..."></div>
+            <div class="cf"><label>Link — Actualización de datos</label><input id="rc-datos" placeholder="https://forms.google.com/..."></div>
+          </div>
+          <button class="btn-s" onclick="saveLinks()">💾 Guardar links</button>
+        </div>
+        <div class="card" style="margin-top:18px">
+          <h3>📁 Archivos para el plantel docente</h3>
+          <p class="desc">Subí links a documentos importantes (Drive, Dropbox, etc.). Los docentes los pueden ver preguntándole a Valeria.</p>
+          <div id="archList"></div>
+          <button class="btn-add" onclick="addArch()">+ Agregar archivo / documento</button>
+          <button class="btn-s" style="margin-top:10px" onclick="saveArchivos()">💾 Guardar archivos</button>
+        </div>
+      </div>
+
+      <!-- ────── PANEL: ANALÍTICOS ────── -->
+      <div id="pan-analiticos" class="panel">
+        <div class="prow prow-3">
+          <div class="card">
+            <h3>📊 Analíticos Parciales</h3>
+            <p class="desc">Subí el archivo Excel con la solapa de parciales.</p>
+            <div class="upzone" onclick="document.getElementById('upParcial').click()">
+              <div class="up-ico">📊</div><p><b>Clic aquí</b> para subir el archivo</p>
+              <p style="font-size:11px;margin-top:3px;color:#94a3b8">.xlsx · .xls</p>
+              <input type="file" id="upParcial" accept=".xlsx,.xls" onchange="loadAnalitico(this,'parciales')">
+            </div>
+            <div class="up-info" id="inf-parcial"></div>
+          </div>
+          <div class="card">
+            <h3>💻 Finales Digital</h3>
+            <p class="desc">Subí el archivo Excel con la solapa de finales digitales.</p>
+            <div class="upzone" onclick="document.getElementById('upDigital').click()">
+              <div class="up-ico">💻</div><p><b>Clic aquí</b> para subir el archivo</p>
+              <p style="font-size:11px;margin-top:3px;color:#94a3b8">.xlsx · .xls</p>
+              <input type="file" id="upDigital" accept=".xlsx,.xls" onchange="loadAnalitico(this,'digital')">
+            </div>
+            <div class="up-info" id="inf-digital"></div>
+          </div>
+          <div class="card">
+            <h3>📃 Finales en Papel</h3>
+            <p class="desc">Subí el archivo Excel con la solapa de finales en papel.</p>
+            <div class="upzone" onclick="document.getElementById('upPapel').click()">
+              <div class="up-ico">📃</div><p><b>Clic aquí</b> para subir el archivo</p>
+              <p style="font-size:11px;margin-top:3px;color:#94a3b8">.xlsx · .xls</p>
+              <input type="file" id="upPapel" accept=".xlsx,.xls" onchange="loadAnalitico(this,'papel')">
+            </div>
+            <div class="up-info" id="inf-papel"></div>
+          </div>
+        </div>
+        <div class="card">
+          <h3>📈 Resumen de analíticos cargados</h3>
+          <div class="stats-mini">
+            <div class="sm"><div class="n" id="st-p">0</div><div class="l">Parciales</div></div>
+            <div class="sm"><div class="n" id="st-d">0</div><div class="l">Finales Digital</div></div>
+            <div class="sm"><div class="n" id="st-pa">0</div><div class="l">Finales Papel</div></div>
+          </div>
+          <div class="tbl-wrap" id="prevAnal"></div>
+        </div>
+      </div>
+
+      <!-- ────── PANEL: PREINSCRIPCIONES ────── -->
+      <div id="pan-inscripciones" class="panel">
+        <div class="card">
+          <h3>📋 Preinscripciones recibidas</h3>
+          <p class="desc">Alumnos que completaron el formulario online. Podés exportar a Excel.</p>
+          <div style="display:flex;gap:10px;align-items:center;margin-bottom:12px">
+            <input type="text" id="srchInscr" placeholder="Buscar por nombre, DNI o sede..." oninput="renderInscr()" style="border:1.5px solid var(--slate3);border-radius:8px;padding:8px 12px;font-family:'DM Sans',sans-serif;font-size:13px;outline:none;flex:1">
+            <button class="btn-s green" onclick="exportInscr()">📥 Exportar Excel</button>
+          </div>
+          <div class="tbl-wrap" id="inscrTable"><p style="color:var(--slate);font-size:13px">No hay preinscripciones aún.</p></div>
+        </div>
+      </div>
+
+    </div><!-- /content -->
+  </div><!-- /main -->
+</div><!-- /shell -->
+
+<script>
+// ─────────────────────────────────────
+// CREDENCIALES DEMO
+// ─────────────────────────────────────
+var USERS = {
+  admin:  {pass:'cens451', role:'directivo', label:'Director/a', color:'#2563eb'},
+  preceptor: {pass:'prece451', role:'preceptor', label:'Preceptor/a', color:'#d97706'},
+  docente:{pass:'doc451',  role:'docente',    label:'Docente',    color:'#059669'}
+};
+var currentRole = null;
+var selectedRole = 'directivo';
+
+function selRole(r,btn){
+  selectedRole=r;
+  document.querySelectorAll('.rbtn').forEach(b=>b.classList.remove('sel'));
+  btn.classList.add('sel');
+}
+
+function doLogin(){
+  var u=document.getElementById('lu').value.trim();
+  var p=document.getElementById('lp').value;
+  var err=document.getElementById('lErr');
+  var user=USERS[u];
+  if(!user||user.pass!==p){err.style.display='block';return;}
+  err.style.display='none';
+  currentRole=user.role;
+  document.getElementById('roleLabel').textContent=user.label;
+  document.getElementById('roleDot').style.background=user.color;
+  document.getElementById('sbUser').textContent=user.label;
+  buildNav(user.role);
+  loadAll();
+  document.getElementById('loginScreen').style.display='none';
+  document.getElementById('shell').style.display='block';
+  goPanel('dashboard');
+}
+
+function logout(){
+  document.getElementById('loginScreen').style.display='flex';
+  document.getElementById('shell').style.display='none';
+  document.getElementById('lu').value='';
+  document.getElementById('lp').value='';
+}
+
+// ─────────────────────────────────────
+// NAV POR ROL
+// ─────────────────────────────────────
+var NAV_ITEMS = {
+  directivo:[
+    {sec:'Principal'},
+    {id:'dashboard',ic:'📊',lbl:'Dashboard'},
+    {sec:'Configuración de Valeria'},
+    {id:'info',ic:'📌',lbl:'Info institucional'},
+    {id:'horarios',ic:'⏰',lbl:'Horarios y turnos'},
+    {id:'docs',ic:'📄',lbl:'Documentos requeridos'},
+    {id:'faq',ic:'💬',lbl:'Preguntas frecuentes'},
+    {id:'recursos',ic:'👩‍🏫',lbl:'Recursos docentes'},
+    {sec:'Gestión'},
+    {id:'analiticos',ic:'🎓',lbl:'Cargar analíticos'},
+    {id:'inscripciones',ic:'📋',lbl:'Preinscripciones'},
+  ],
+  preceptor:[
+    {sec:'Informes'},
+    {id:'dashboard',ic:'📊',lbl:'Dashboard'},
+    {id:'inscripciones',ic:'📋',lbl:'Preinscripciones'},
+    {id:'analiticos',ic:'🎓',lbl:'Analíticos'},
+  ],
+  docente:[
+    {sec:'Mi espacio'},
+    {id:'dashboard',ic:'📊',lbl:'Inicio'},
+    {id:'recursos',ic:'👩‍🏫',lbl:'Mis recursos'},
+  ]
+};
+
+function buildNav(role){
+  var nav=document.getElementById('sbNav');
+  nav.innerHTML='';
+  (NAV_ITEMS[role]||NAV_ITEMS.docente).forEach(function(item){
+    if(item.sec){
+      var s=document.createElement('div');s.className='sb-section';s.textContent=item.sec;nav.appendChild(s);
+    } else {
+      var d=document.createElement('div');d.className='sbi';d.id='nav-'+item.id;
+      d.innerHTML='<span class="ic">'+item.ic+'</span>'+item.lbl;
+      d.onclick=function(){goPanel(item.id)};
+      nav.appendChild(d);
+    }
+  });
+}
+
+// ─────────────────────────────────────
+// PANELES
+// ─────────────────────────────────────
+var PANEL_TITLES = {dashboard:'Dashboard',info:'Info institucional',horarios:'Horarios y turnos',docs:'Documentos requeridos',faq:'Preguntas frecuentes',recursos:'Recursos docentes',analiticos:'Cargar analíticos',inscripciones:'Preinscripciones'};
+
+function goPanel(id){
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('on'));
+  var pan=document.getElementById('pan-'+id);
+  if(pan) pan.classList.add('on');
+  document.querySelectorAll('.sbi').forEach(b=>b.classList.remove('active'));
+  var nav=document.getElementById('nav-'+id);
+  if(nav) nav.classList.add('active');
+  document.getElementById('topTitle').textContent=PANEL_TITLES[id]||'';
+  document.getElementById('topSub').textContent='CENS 451 · La Matanza';
+  if(id==='inscripciones') renderInscr();
+  if(id==='dashboard') renderDash();
+  if(id==='faq') renderFAQList();
+}
+
+// ─────────────────────────────────────
+// STORAGE
+// ─────────────────────────────────────
+var CFG={horarios:[{n:'Tarde',h:'14:00 a 18:00 hs',d:'Lunes a viernes'},{n:'Noche',h:'18:00 a 22:00 hs',d:'Lunes a viernes'}],horarioExtra:'',documentos:['DNI (original y fotocopia)','Certificado de estudios previos','2 fotos tamaño 4x4','Constancia de domicilio'],docsExtra:'',faq:[],proyectoLink:'',datosLink:'',archivosDocente:[],periodo:'Todo el año con cupo disponible'};
+var ANALITICOS={parciales:[],digital:[],papel:[]};
+var INSCR=[];
+
+function loadAll(){
+  try{var c=localStorage.getItem('cens451_cfg');if(c)CFG=JSON.parse(c);}catch(e){}
+  try{var a=localStorage.getItem('cens451_analiticos');if(a)ANALITICOS=JSON.parse(a);}catch(e){}
+  try{var i=localStorage.getItem('cens451_inscr');if(i)INSCR=JSON.parse(i);}catch(e){}
+  updateStats();
+  loadFieldsFromCFG();
+}
+
+function saveCFG(){try{localStorage.setItem('cens451_cfg',JSON.stringify(CFG));}catch(e){}}
+function saveAnal(){try{localStorage.setItem('cens451_analiticos',JSON.stringify(ANALITICOS));}catch(e){}}
+
+function updateStats(){
+  document.getElementById('st-p').textContent=ANALITICOS.parciales.length;
+  document.getElementById('st-d').textContent=ANALITICOS.digital.length;
+  document.getElementById('st-pa').textContent=ANALITICOS.papel.length;
+}
+
+function toast(msg){
+  var t=document.getElementById('toastEl');
+  t.textContent=msg;t.style.display='block';
+  setTimeout(function(){t.style.display='none';},2800);
+}
+
+// ─────────────────────────────────────
+// INFO
+// ─────────────────────────────────────
+function loadFieldsFromCFG(){
+  if(document.getElementById('ci-tel')) document.getElementById('ci-tel').value=CFG.tel||'11 5312 6676';
+  if(document.getElementById('ci-email')) document.getElementById('ci-email').value=CFG.email||'';
+  if(document.getElementById('ci-ig')) document.getElementById('ci-ig').value=CFG.ig||'Cens.451';
+  if(document.getElementById('ci-periodo')) document.getElementById('ci-periodo').value=CFG.periodo||'Todo el año con cupo disponible';
+  if(document.getElementById('rc-proyecto')) document.getElementById('rc-proyecto').value=CFG.proyectoLink||'';
+  if(document.getElementById('rc-datos')) document.getElementById('rc-datos').value=CFG.datosLink||'';
+  if(document.getElementById('horExtra')) document.getElementById('horExtra').value=CFG.horarioExtra||'';
+  if(document.getElementById('docsExtra')) document.getElementById('docsExtra').value=CFG.docsExtra||'';
+  renderArchList();
+}
+
+function saveInfo(){
+  CFG.nombre=document.getElementById('ci-nombre').value;
+  CFG.periodo=document.getElementById('ci-periodo').value;
+  CFG.tel=document.getElementById('ci-tel').value;
+  CFG.email=document.getElementById('ci-email').value;
+  CFG.ig=document.getElementById('ci-ig').value;
+  CFG.web=document.getElementById('ci-web').value;
+  CFG.desc=document.getElementById('ci-desc').value;
+  saveCFG();toast('✅ Información guardada. Valeria ya la usa.');
+}
+
+// ─────────────────────────────────────
+// HORARIOS
+// ─────────────────────────────────────
+function saveHorarios(){
+  CFG.horarios=[];
+  document.querySelectorAll('#turnosList .ri').forEach(function(r){
+    var n=r.querySelector('.tn'),h=r.querySelector('.th'),d=r.querySelector('.td');
+    if(n&&n.value) CFG.horarios.push({n:n.value,h:h?h.value:'',d:d?d.value:''});
+  });
+  CFG.horarioExtra=document.getElementById('horExtra').value;
+  saveCFG();toast('✅ Horarios guardados. Valeria los usa automáticamente.');
+}
+function addTurno(){
+  var d=document.createElement('div');d.className='ri';
+  d.innerHTML='<input class="tn" placeholder="Nombre (ej: Sábados)"><input class="th" placeholder="Horario" style="max-width:160px"><input class="td" placeholder="Días"><button class="ri-del" onclick="this.parentElement.remove()">✕</button>';
+  document.getElementById('turnosList').appendChild(d);
+}
+
+// ─────────────────────────────────────
+// DOCUMENTOS
+// ─────────────────────────────────────
+function saveDocs(){
+  CFG.documentos=[];
+  document.querySelectorAll('#docsList .ri input').forEach(function(i){if(i.value)CFG.documentos.push(i.value);});
+  CFG.docsExtra=document.getElementById('docsExtra').value;
+  saveCFG();toast('✅ Documentos guardados.');
+}
+function addDoc(){
+  var d=document.createElement('div');d.className='ri';
+  d.innerHTML='<input placeholder="Ej: Libreta sanitaria"><button class="ri-del" onclick="this.parentElement.remove()">✕</button>';
+  document.getElementById('docsList').appendChild(d);
+}
+
+// ─────────────────────────────────────
+// FAQ
+// ─────────────────────────────────────
+function renderFAQList(){
+  var c=document.getElementById('faqList');if(!c)return;
+  c.innerHTML='';
+  (CFG.faq||[]).forEach(function(f,i){
+    var d=document.createElement('div');d.className='faq-item';
+    d.innerHTML='<button class="faq-del" onclick="delFAQ('+i+')">✕</button>'
+      +'<label>Palabras clave (separadas por coma) — Valeria las detecta en la pregunta</label>'
+      +'<input class="fkw" value="'+f.keywords+'" placeholder="Ej: beca,becas,ayuda economica">'
+      +'<label>Respuesta de Valeria</label>'
+      +'<textarea class="fresp">'+f.respuesta+'</textarea>';
+    c.appendChild(d);
+  });
+}
+function addFAQ(){CFG.faq.push({keywords:'',respuesta:''});renderFAQList();document.getElementById('faqList').lastElementChild.querySelector('.fkw').focus();}
+function delFAQ(i){CFG.faq.splice(i,1);renderFAQList();}
+function saveFAQ(){
+  CFG.faq=[];
+  document.querySelectorAll('#faqList .faq-item').forEach(function(item){
+    var kw=item.querySelector('.fkw'),r=item.querySelector('.fresp');
+    if(kw&&kw.value.trim()) CFG.faq.push({keywords:kw.value.trim(),respuesta:r?r.value:''});
+  });
+  saveCFG();toast('✅ FAQ guardada. Valeria ya responde con la info actualizada.');
+}
+
+// ─────────────────────────────────────
+// RECURSOS DOCENTES
+// ─────────────────────────────────────
+function saveLinks(){
+  CFG.proyectoLink=document.getElementById('rc-proyecto').value;
+  CFG.datosLink=document.getElementById('rc-datos').value;
+  saveCFG();toast('✅ Links guardados.');
+}
+function renderArchList(){
+  var c=document.getElementById('archList');if(!c)return;c.innerHTML='';
+  (CFG.archivosDocente||[]).forEach(function(a,i){
+    var d=document.createElement('div');d.className='arch-item';
+    d.innerHTML='<input value="'+a.nombre+'" placeholder="Nombre del archivo" oninput="CFG.archivosDocente['+i+'].nombre=this.value">'
+      +'<input value="'+a.url+'" placeholder="Link (Drive, Dropbox...)" oninput="CFG.archivosDocente['+i+'].url=this.value">'
+      +'<input value="'+(a.desc||'')+'" placeholder="Descripción breve (opcional)" style="max-width:200px" oninput="CFG.archivosDocente['+i+'].desc=this.value">'
+      +'<button class="arch-del" onclick="delArch('+i+')">✕</button>';
+    c.appendChild(d);
+  });
+}
+function addArch(){CFG.archivosDocente.push({nombre:'',url:'',desc:''});renderArchList();}
+function delArch(i){CFG.archivosDocente.splice(i,1);renderArchList();}
+function saveArchivos(){saveCFG();toast('✅ Archivos guardados. Valeria los muestra a los docentes.');}
+
+// ─────────────────────────────────────
+// ANALÍTICOS
+// ─────────────────────────────────────
+function loadAnalitico(input,tipo){
+  var file=input.files[0];if(!file)return;
+  var reader=new FileReader();
+  reader.onload=function(e){
+    var data=new Uint8Array(e.target.result);
+    var wb=XLSX.read(data,{type:'array'});
+    var rows=[];
+    wb.SheetNames.forEach(function(sn){
+      var sheet=wb.Sheets[sn];
+      var data2=XLSX.utils.sheet_to_json(sheet,{defval:''});
+      rows=rows.concat(data2);
+    });
+    ANALITICOS[tipo]=rows;
+    saveAnal();
+    updateStats();
+    var inf=document.getElementById('inf-'+tipo);
+    if(inf) inf.textContent='✅ '+file.name+' — '+rows.length+' registros cargados.';
+    renderPreview();
+    toast('✅ '+rows.length+' registros de '+tipo+' cargados correctamente.');
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+function renderPreview(){
+  var all=ANALITICOS.parciales.concat(ANALITICOS.digital).concat(ANALITICOS.papel).slice(0,6);
+  var c=document.getElementById('prevAnal');if(!c)return;
+  if(!all.length){c.innerHTML='';return;}
+  var cols=Object.keys(all[0]).slice(0,5);
+  c.innerHTML='<p style="font-size:11px;color:var(--slate);margin-bottom:6px">Vista previa:</p><table class="tbl"><thead><tr>'+cols.map(function(c){return'<th>'+c+'</th>'}).join('')+'</tr></thead><tbody>'+all.map(function(r){return'<tr>'+cols.map(function(c2){return'<td>'+r[c2]+'</td>'}).join('')+'</tr>'}).join('')+'</tbody></table>';
+}
+
+// ─────────────────────────────────────
+// PREINSCRIPCIONES
+// ─────────────────────────────────────
+function renderInscr(){
+  var srch=(document.getElementById('srchInscr')||{value:''}).value.toLowerCase();
+  var c=document.getElementById('inscrTable');
+  var data=INSCR.filter(function(r){if(!srch)return true;return JSON.stringify(r).toLowerCase().includes(srch);});
+  if(!data.length){c.innerHTML='<p style="font-size:13px;color:var(--slate)">No hay preinscripciones que coincidan.</p>';return;}
+  c.innerHTML='<table class="tbl"><thead><tr><th>#</th><th>Apellido y nombre</th><th>DNI</th><th>Localidad</th><th>Turno</th><th>Sede asignada</th><th>Teléfono</th><th>Email</th><th>Fecha</th></tr></thead><tbody>'+data.map(function(r,i){return'<tr><td>'+(i+1)+'</td><td>'+r.ap+', '+r.nm+'</td><td>'+r.dni+'</td><td>'+r.loc+'</td><td>'+r.turno+'</td><td>'+r.sede+'</td><td>'+(r.tel||'—')+'</td><td>'+(r.mail||'—')+'</td><td>'+r.fecha+'</td></tr>'}).join('')+'</tbody></table>';
+}
+
+function exportInscr(){
+  if(!INSCR.length){alert('No hay preinscripciones para exportar.');return;}
+  var wb=XLSX.utils.book_new();
+  var data=INSCR.map(function(r,i){return{N:i+1,Apellido:r.ap,Nombre:r.nm,DNI:r.dni,Localidad:r.loc,Turno:r.turno,'Sede asignada':r.sede,Telefono:r.tel||'',Email:r.mail||'','Último año':r.año||'',Calle:r.calle||'',CP:r.cp||'',Observaciones:r.obs||'',Fecha:r.fecha};});
+  var ws=XLSX.utils.json_to_sheet(data);
+  ws['!cols']=[{wch:4},{wch:18},{wch:18},{wch:12},{wch:18},{wch:14},{wch:22},{wch:12},{wch:28},{wch:20},{wch:25},{wch:6},{wch:30},{wch:12}];
+  XLSX.utils.book_append_sheet(wb,'Preinscripciones',ws);
+  XLSX.writeFile(wb,'Preinscripciones_CENS451_'+new Date().toLocaleDateString('es-AR').replace(/\//g,'-')+'.xlsx');
+  toast('✅ Excel exportado correctamente.');
+}
+
+// ─────────────────────────────────────
+// DASHBOARD
+// ─────────────────────────────────────
+function renderDash(){
+  document.getElementById('ds-inscr').textContent=INSCR.length;
+  document.getElementById('ds-parc').textContent=ANALITICOS.parciales.length;
+  document.getElementById('ds-final').textContent=ANALITICOS.digital.length+ANALITICOS.papel.length;
+  var c=document.getElementById('dashTable');
+  var data=INSCR.slice(-10).reverse();
+  if(!data.length){c.innerHTML='<p style="font-size:13px;color:var(--slate)">No hay preinscripciones aún.</p>';return;}
+  c.innerHTML='<table class="tbl"><thead><tr><th>Nombre</th><th>DNI</th><th>Localidad</th><th>Sede</th><th>Turno</th><th>Fecha</th></tr></thead><tbody>'+data.map(function(r){return'<tr><td>'+r.ap+', '+r.nm+'</td><td>'+r.dni+'</td><td>'+r.loc+'</td><td>'+r.sede+'</td><td>'+r.turno+'</td><td>'+r.fecha+'</td></tr>'}).join('')+'</tbody></table>';
+}
+</script>
+</body>
+</html>
