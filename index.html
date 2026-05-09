@@ -625,7 +625,7 @@ function getReply(msg){
   }
 
   if(m.includes('sede')||m.includes('cerca')||m.includes('donde')||m.includes('ubicac')||m.includes('vivo')||m.includes('barrio')||m.includes('localidad')){
-    return '📍 Tenemos <b>5 sedes</b> en La Matanza:<br>⭐ <b>Sede Central:</b> Camacuá 3407 · Villa Luzuriaga<br>📍 <b>Anexo Veteranos:</b> Bolívar 1682 · Ramos Mejía<br>📍 <b>Anexo Torero:</b> Coronel Aguirre 2784 · Rafael Castillo<br>📍 <b>Anexo Atalaya:</b> Del Bañado 10 · Rafael Castillo<br>📍 <b>Anexo Canadá:</b> Canadá 4664 · San Justo<br><br>Decime <b>en qué barrio vivís</b> y te digo cuál te queda más cerca 🗺️';
+    return '📍 Tenemos <b>5 sedes</b> en La Matanza:<br>⭐ <b>Sede Central:</b> Camacuá 3407 · Villa Luzuriaga<br>📍 <b>Anexo Veteranos:</b> Bolívar 1682 · Ramos Mejía<br>📍 <b>Anexo Torero:</b> Coronel Aguirre 2784 · Rafael Castillo<br>📍 <b>Anexo Atalaya:</b> Del Bañado 10 · Rafael Castillo<br>📍 <b>Anexo Canadá:</b> Canadá 4664 · San Justo<br><br>Decime <b>en qué localidad vivís</b> y te digo cuál te queda más cerca 🗺️';
   }
 
   // Detectar barrio en mensaje
@@ -640,7 +640,7 @@ function getReply(msg){
     var docs=CFG.documentos||['DNI (original y fotocopia)','Certificado de estudios previos','2 fotos 4x4','Constancia de domicilio'];
     return 'Para inscribirte necesitás:<br>'+docs.map(function(d){return'📄 '+d}).join('<br>')+(CFG.docsExtra?'<br><br>ℹ️ '+CFG.docsExtra:'');
   }
-  if(m.includes('gratis')||m.includes('gratuito')||m.includes('costo')||m.includes('pago')||m.includes('arancel')){
+  if(m.includes('gratis')||m.includes('costo')||m.includes('pago')||m.includes('arancel')){
     return '✅ El CENS 451 es completamente <b>gratuito</b>. Es una institución pública del Estado argentino. No hay ningún arancel.';
   }
   if(m.includes('analitico')||m.includes('titulo')||m.includes('tramit')){
