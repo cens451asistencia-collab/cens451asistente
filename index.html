@@ -628,9 +628,20 @@ function getReply(msg){
     return '📍 Tenemos <b>5 sedes</b> en La Matanza:<br>⭐ <b>Sede Central:</b> Camacuá 3407 · Villa Luzuriaga<br>📍 <b>Anexo Veteranos:</b> Bolívar 1682 · Ramos Mejía<br>📍 <b>Anexo Torero:</b> Coronel Aguirre 2784 · Rafael Castillo<br>📍 <b>Anexo Atalaya:</b> Del Bañado 10 · Rafael Castillo<br>📍 <b>Anexo Canadá:</b> Canadá 4664 · San Justo<br><br>Decime <b>en qué localidad vivís</b> y te digo cuál te queda más cerca 🗺️';
   }
 
-  // Detectar barrio en mensaje
-  var barrios=['villa luzuriaga','ramos mejia','san justo','rafael castillo','gonzalez catan','isidro casanova','virrey del pino','laferrere','ciudad evita','aldo bonzi','villa madero','tapiales','la tablada'];
-  var sedeMap={'villa luzuriaga':'Sede Central — Camacuá 3407','ramos mejia':'Anexo Veteranos — Bolívar 1682, Ramos Mejía','san justo':'Anexo Canadá — Canadá 4664, San Justo','rafael castillo':'Anexo Torero — Coronel Aguirre 2784 o Anexo Atalaya — Del Bañado 10, Rafael Castillo','gonzalez catan':'Anexo Canadá — Canadá 4664, San Justo','isidro casanova':'Anexo Torero — Coronel Aguirre 2784, Rafael Castillo','virrey del pino':'Anexo Atalaya — Del Bañado 10, Rafael Castillo','laferrere':'Anexo Canadá — Canadá 4664, San Justo','ciudad evita':'Sede Central — Camacuá 3407, Villa Luzuriaga','aldo bonzi':'Sede Central — Camacuá 3407, Villa Luzuriaga','villa madero':'Sede Central — Camacuá 3407, Villa Luzuriaga','tapiales':'Sede Central — Camacuá 3407, Villa Luzuriaga','la tablada':'Anexo Veteranos — Bolívar 1682, Ramos Mejía'};
+  // Detectar localidad en mensaje
+  var barrios=['villa luzuriaga','ramos mejia','san justo','rafael castillo','isidro casanova','gregorio de laferrere','laferrere','ciudad evita','moron','haedo'];
+  var sedeMap={
+    'villa luzuriaga':'Sede Central — Camacuá 3407, Villa Luzuriaga',
+    'ramos mejia':'Anexo Veteranos — Bolívar 1682, Ramos Mejía',
+    'san justo':'Podés concurrir a la <b>Sede Central</b> (Camacuá 3407, Villa Luzuriaga), al <b>Anexo Veteranos</b> (Bolívar 1682, Ramos Mejía) o al <b>Anexo Canadá</b> (Canadá 4664, San Justo). Te recomendamos llamar al 11 5312-6676 para confirmar cupo',
+    'rafael castillo':'Anexo Torero — Coronel Aguirre 2784, Rafael Castillo',
+    'isidro casanova':'Tenés varias sedes cercanas: <b>Anexo Torero</b> (Coronel Aguirre 2784, Rafael Castillo), <b>Anexo Atalaya</b> (Del Bañado 10, Rafael Castillo) y <b>Anexo Canadá</b> (Canadá 4664, San Justo). Llamanos al 11 5312-6676 para ver cuál tiene cupo',
+    'gregorio de laferrere':'Anexo Canadá — Canadá 4664, San Justo',
+    'laferrere':'Anexo Canadá — Canadá 4664, San Justo',
+    'ciudad evita':'Anexo Canadá — Canadá 4664, San Justo',
+    'moron':'Anexo Veteranos — Bolívar 1682, Ramos Mejía',
+    'haedo':'Anexo Veteranos — Bolívar 1682, Ramos Mejía'
+  };
   for(var i=0;i<barrios.length;i++){if(m.includes(barrios[i])){return '📍 Para quienes viven en <b>'+barrios[i].replace(/\b\w/g,c=>c.toUpperCase())+'</b>, la sede más cercana es:<br><b>'+sedeMap[barrios[i]]+'</b><br><br>¿Querés que te explique cómo inscribirte? 📋';}}
 
   if(m.includes('inscri')||m.includes('anot')){
@@ -640,7 +651,7 @@ function getReply(msg){
     var docs=CFG.documentos||['DNI (original y fotocopia)','Certificado de estudios previos','2 fotos 4x4','Constancia de domicilio'];
     return 'Para inscribirte necesitás:<br>'+docs.map(function(d){return'📄 '+d}).join('<br>')+(CFG.docsExtra?'<br><br>ℹ️ '+CFG.docsExtra:'');
   }
-  if(m.includes('gratis')||m.includes('gratuito')||m.includes('costo')||m.includes('pago')||m.includes('arancel')){
+  if(m.includes('gratis')||m.includes('costo')||m.includes('pago')||m.includes('arancel')){
     return '✅ El CENS 451 es completamente <b>gratuito</b>. Es una institución pública del Estado argentino. No hay ningún arancel.';
   }
   if(m.includes('analitico')||m.includes('titulo')||m.includes('tramit')){
