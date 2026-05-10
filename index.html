@@ -146,19 +146,18 @@ body{font-family:'DM Sans',sans-serif;background:#f0f4fa;color:var(--ink);min-he
 
 /* ── MOBILE ── */
 @media(max-width:700px){
-  .nav{padding:0 12px;height:auto;flex-wrap:wrap;gap:0}
-  .nav-brand{padding:10px 0;flex:1;min-width:0}
-  .nav-name{font-size:13px;line-height:1.2}
-  .nav-name small{display:none}
+  .nav{padding:0 12px;height:52px;flex-wrap:nowrap}
+  .nav-brand{padding:0;flex-shrink:0}
+  .nav-name{display:none}
   .nav-seal{width:34px;height:34px;flex-shrink:0}
   .nav-seal span{font-size:7px}
-  .nav-links{width:100%;overflow-x:auto;padding:6px 0 8px;gap:2px;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+  .nav-links{overflow-x:auto;padding:0;gap:2px;-webkit-overflow-scrolling:touch;scrollbar-width:none;flex-shrink:1}
   .nav-links::-webkit-scrollbar{display:none}
-  .nl{font-size:12px;padding:6px 11px;white-space:nowrap}
+  .nl{font-size:12px;padding:6px 10px;white-space:nowrap}
   .hero{grid-template-columns:1fr;padding:32px 18px 0;min-height:auto}
   .hero-title{font-size:32px}
   .hero-body{font-size:14px;max-width:100%}
-  .valeria-wrap{display:none}
+  .valeria-wrap{display:flex;transform:scale(0.6);transform-origin:center bottom;margin-top:-40px;height:240px}
   .qcards{grid-template-columns:1fr;padding:20px 16px 0;margin-top:-20px;gap:10px}
   .chat-wrap{grid-template-columns:1fr;padding:16px;gap:14px}
   .chat-msgs{height:260px}
