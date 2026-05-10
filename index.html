@@ -144,6 +144,37 @@ body{font-family:'DM Sans',sans-serif;background:#f0f4fa;color:var(--ink);min-he
 .sede-card p{font-size:12px;color:var(--slate);line-height:1.5}
 .sede-card .chip{display:inline-block;background:var(--sky);color:var(--blue2);border-radius:12px;padding:2px 8px;font-size:10px;font-weight:700;margin:2px 2px 0 0}
 
+/* ── MOBILE ── */
+@media(max-width:700px){
+  .nav{padding:0 12px;height:auto;flex-wrap:wrap;gap:0}
+  .nav-brand{padding:10px 0;flex:1;min-width:0}
+  .nav-name{font-size:13px;line-height:1.2}
+  .nav-name small{display:none}
+  .nav-seal{width:34px;height:34px;flex-shrink:0}
+  .nav-seal span{font-size:7px}
+  .nav-links{width:100%;overflow-x:auto;padding:6px 0 8px;gap:2px;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+  .nav-links::-webkit-scrollbar{display:none}
+  .nl{font-size:12px;padding:6px 11px;white-space:nowrap}
+  .hero{grid-template-columns:1fr;padding:32px 18px 0;min-height:auto}
+  .hero-title{font-size:32px}
+  .hero-body{font-size:14px;max-width:100%}
+  .valeria-wrap{display:none}
+  .qcards{grid-template-columns:1fr;padding:20px 16px 0;margin-top:-20px;gap:10px}
+  .chat-wrap{grid-template-columns:1fr;padding:16px;gap:14px}
+  .chat-msgs{height:260px}
+  .profile-btns{flex-wrap:wrap}
+  .pbtn{font-size:10px;padding:7px 4px}
+  .info-aside{display:none}
+  .page{padding:16px}
+  .fgrid{grid-template-columns:1fr}
+  .ff.full{grid-column:1}
+  .fcard{padding:18px}
+  .alumno-grid{grid-template-columns:1fr}
+  .search-row{grid-template-columns:1fr 1fr;gap:6px}
+  .search-row button{grid-column:1/-1}
+  .sedes-grid{grid-template-columns:1fr}
+}
+
 </style>
 </head>
 <body>
@@ -176,7 +207,7 @@ body{font-family:'DM Sans',sans-serif;background:#f0f4fa;color:var(--ink);min-he
       <p class="hero-body">Horarios pensados para trabajadores y familias. Docentes comprometidos. Tres sedes en La Matanza para que elijas la más cercana a tu casa.</p>
       <div class="hero-ctas">
         <button class="btn btn-gold" onclick="show('inscripcion')">📋 Inscribirme ahora</button>
-        <button class="btn btn-ghost" onclick="document.getElementById('chat-sect').scrollIntoView({behavior:'smooth'})">💬 Hablar con Valeria</button>
+        <button class="btn btn-ghost" onclick="show('home');setTimeout(function(){var el=document.getElementById('chat-sect');if(el)el.scrollIntoView({behavior:'smooth'});},100)">💬 Hablar con Valeria</button>
       </div>
     </div>
     <!-- VALERIA REDISEÑADA — alta y estilizada -->
