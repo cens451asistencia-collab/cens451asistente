@@ -164,7 +164,7 @@ body{font-family:'DM Sans',sans-serif;background:#eef2f8;color:var(--ink);min-he
     <div class="lf"><label>Contraseña</label><input type="password" id="lp" placeholder="••••••" onkeydown="if(event.key==='Enter')doLogin()"></div>
     <button class="btn-login" onclick="doLogin()">Ingresar →</button>
     <div class="login-err" id="lErr">Usuario o contraseña incorrectos.</div>
-    <p style="font-size:11px;color:var(--slate4);margin-top:14px;text-align:center">Demo: usuario <b>admin</b> · contraseña <b>cens451</b></p>
+    
   </div>
 </div>
 
@@ -382,13 +382,8 @@ const firebaseConfig = {
 const fbApp = initializeApp(firebaseConfig);
 const db = getFirestore(fbApp);
 // ─────────────────────────────────────
-// CREDENCIALES DEMO
+// AUTENTICACIÓN VÍA FIRESTORE
 // ─────────────────────────────────────
-var USERS = {
-  admin:  {pass:'cens451', role:'directivo', label:'Director/a', color:'#2563eb'},
-  preceptor: {pass:'prece451', role:'preceptor', label:'Preceptor/a', color:'#d97706'},
-  docente:{pass:'doc451',  role:'docente',    label:'Docente',    color:'#059669'}
-};
 var currentRole = null;
 var selectedRole = 'directivo';
 
@@ -398,22 +393,41 @@ function selRole(r,btn){
   btn.classList.add('sel');
 }
 
-function doLogin(){
+async function doLogin(){
   var u=document.getElementById('lu').value.trim();
   var p=document.getElementById('lp').value;
   var err=document.getElementById('lErr');
-  var user=USERS[u];
-  if(!user||user.pass!==p){err.style.display='block';return;}
+  var btn=document.querySelector('.btn-login');
   err.style.display='none';
-  currentRole=user.role;
-  document.getElementById('roleLabel').textContent=user.label;
-  document.getElementById('roleDot').style.background=user.color;
-  document.getElementById('sbUser').textContent=user.label;
-  buildNav(user.role);
-  loadAll();
-  document.getElementById('loginScreen').style.display='none';
-  document.getElementById('shell').style.display='block';
-  goPanel('dashboard');
+  btn.textContent='Verificando...';
+  btn.disabled=true;
+  try {
+    var snap=await getDocs(collection(db,'usuarios'));
+    var user=null;
+    snap.docs.forEach(function(d){ if(d.id===u) user=d.data(); });
+    if(!user||user.pass!==p){
+      err.textContent='Usuario o contrasena incorrectos.';
+      err.style.display='block';
+      btn.textContent='Ingresar →';
+      btn.disabled=false;
+      return;
+    }
+    currentRole=user.role;
+    document.getElementById('roleLabel').textContent=user.label;
+    document.getElementById('roleDot').style.background=user.color;
+    document.getElementById('sbUser').textContent=user.label;
+    buildNav(user.role);
+    loadAll();
+    document.getElementById('loginScreen').style.display='none';
+    document.getElementById('shell').style.display='block';
+    goPanel('dashboard');
+  } catch(e) {
+    err.textContent='Error de conexion. Intenta de nuevo.';
+    err.style.display='block';
+    console.error(e);
+  }
+  btn.textContent='Ingresar →';
+  btn.disabled=false;
 }
 
 function logout(){
