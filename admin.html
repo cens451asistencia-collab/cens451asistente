@@ -756,7 +756,7 @@ function exportInscr(){
   };});
   var ws=XLSX.utils.json_to_sheet(data);
   ws['!cols']=[{wch:4},{wch:18},{wch:18},{wch:12},{wch:18},{wch:14},{wch:22},{wch:12},{wch:28},{wch:20},{wch:25},{wch:6},{wch:30},{wch:12}];
-  XLSX.utils.book_append_sheet(wb,'Preinscripciones',ws);
+  XLSX.utils.book_append_sheet(wb,ws,'Preinscripciones');
   XLSX.writeFile(wb,'Preinscripciones_CENS451_'+new Date().toLocaleDateString('es-AR').replace(/\//g,'-')+'.xlsx');
   toast('✅ Excel exportado correctamente.');
 }
