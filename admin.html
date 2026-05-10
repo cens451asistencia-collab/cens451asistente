@@ -268,7 +268,7 @@ body{font-family:'DM Sans',sans-serif;background:#eef2f8;color:var(--ink);min-he
             <div class="ri"><input value="2 fotos tamaño 4x4"><button class="ri-del" onclick="this.parentElement.remove()">✕</button></div>
             <div class="ri"><input value="Constancia de domicilio (factura de servicio o certificado policial)"><button class="ri-del" onclick="this.parentElement.remove()">✕</button></div>
           </div>
-          <button class="btn-add" onclick="addDoc()">+ Agregar documento</button>
+          <button class="btn-add" onclick="addDocReq()">+ Agregar documento</button>
           <div class="cf" style="margin-top:14px"><label>Observación adicional</label><textarea id="docsExtra" placeholder="Ej: En caso de no tener el certificado, consultar en secretaría..."></textarea></div>
           <button class="btn-s" onclick="saveDocs()">💾 Guardar</button>
         </div>
@@ -367,7 +367,20 @@ body{font-family:'DM Sans',sans-serif;background:#eef2f8;color:var(--ink);min-he
   </div><!-- /main -->
 </div><!-- /shell -->
 
-<script>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, writeBatch } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyCxMh6pKHWr9YM_kXlyS26fHOAGHh1Epqc",
+  authDomain: "cens451-asistente.firebaseapp.com",
+  projectId: "cens451-asistente",
+  storageBucket: "cens451-asistente.firebasestorage.app",
+  messagingSenderId: "44655214447",
+  appId: "1:44655214447:web:ad05f549de92abfaee329a"
+};
+const fbApp = initializeApp(firebaseConfig);
+const db = getFirestore(fbApp);
 // ─────────────────────────────────────
 // CREDENCIALES DEMO
 // ─────────────────────────────────────
@@ -482,15 +495,40 @@ var ANALITICOS={parciales:[],digital:[],papel:[]};
 var INSCR=[];
 
 function loadAll(){
+  // CFG sigue en localStorage
   try{var c=localStorage.getItem('cens451_cfg');if(c)CFG=JSON.parse(c);}catch(e){}
-  try{var a=localStorage.getItem('cens451_analiticos');if(a)ANALITICOS=JSON.parse(a);}catch(e){}
-  try{var i=localStorage.getItem('cens451_inscr');if(i)INSCR=JSON.parse(i);}catch(e){}
-  updateStats();
   loadFieldsFromCFG();
+  // Analíticos e inscripciones desde Firestore
+  cargarAnaliticosFirestore();
+  cargarInscripcionesFirestore();
 }
 
 function saveCFG(){try{localStorage.setItem('cens451_cfg',JSON.stringify(CFG));}catch(e){}}
-function saveAnal(){try{localStorage.setItem('cens451_analiticos',JSON.stringify(ANALITICOS));}catch(e){}}
+
+async function cargarAnaliticosFirestore(){
+  try {
+    var [snapP, snapD, snapPa] = await Promise.all([
+      getDocs(collection(db,'analiticos_parcial')),
+      getDocs(collection(db,'analiticos_final_digital')),
+      getDocs(collection(db,'analiticos_final_papel'))
+    ]);
+    ANALITICOS.parciales = snapP.docs.map(d=>({...d.data(), _id:d.id}));
+    ANALITICOS.digital   = snapD.docs.map(d=>({...d.data(), _id:d.id}));
+    ANALITICOS.papel     = snapPa.docs.map(d=>({...d.data(), _id:d.id}));
+    updateStats();
+    renderPreview();
+    if(typeof renderDash==='function') renderDash();
+  } catch(e){ console.error('Error cargando analíticos:',e); }
+}
+
+async function cargarInscripcionesFirestore(){
+  try {
+    var snap = await getDocs(collection(db,'preinscripciones'));
+    INSCR = snap.docs.map(d=>({...d.data(), _id:d.id}));
+    if(typeof renderDash==='function') renderDash();
+    if(typeof renderInscr==='function') renderInscr();
+  } catch(e){ console.error('Error cargando inscripciones:',e); }
+}
 
 function updateStats(){
   document.getElementById('st-p').textContent=ANALITICOS.parciales.length;
@@ -557,7 +595,7 @@ function saveDocs(){
   CFG.docsExtra=document.getElementById('docsExtra').value;
   saveCFG();toast('✅ Documentos guardados.');
 }
-function addDoc(){
+function addDocReq(){
   var d=document.createElement('div');d.className='ri';
   d.innerHTML='<input placeholder="Ej: Libreta sanitaria"><button class="ri-del" onclick="this.parentElement.remove()">✕</button>';
   document.getElementById('docsList').appendChild(d);
@@ -617,24 +655,43 @@ function saveArchivos(){saveCFG();toast('✅ Archivos guardados. Valeria los mue
 // ANALÍTICOS
 // ─────────────────────────────────────
 function loadAnalitico(input,tipo){
+  var colMap={parciales:'analiticos_parcial',digital:'analiticos_final_digital',papel:'analiticos_final_papel'};
+  var colName=colMap[tipo];
   var file=input.files[0];if(!file)return;
+  var inf=document.getElementById('inf-'+tipo);
+  if(inf) inf.textContent='⏳ Cargando...';
   var reader=new FileReader();
-  reader.onload=function(e){
-    var data=new Uint8Array(e.target.result);
-    var wb=XLSX.read(data,{type:'array'});
-    var rows=[];
-    wb.SheetNames.forEach(function(sn){
-      var sheet=wb.Sheets[sn];
-      var data2=XLSX.utils.sheet_to_json(sheet,{defval:''});
-      rows=rows.concat(data2);
-    });
-    ANALITICOS[tipo]=rows;
-    saveAnal();
-    updateStats();
-    var inf=document.getElementById('inf-'+tipo);
-    if(inf) inf.textContent='✅ '+file.name+' — '+rows.length+' registros cargados.';
-    renderPreview();
-    toast('✅ '+rows.length+' registros de '+tipo+' cargados correctamente.');
+  reader.onload=async function(e){
+    try {
+      var data=new Uint8Array(e.target.result);
+      var wb=XLSX.read(data,{type:'array'});
+      var rows=[];
+      wb.SheetNames.forEach(function(sn){
+        var sheet=wb.Sheets[sn];
+        var data2=XLSX.utils.sheet_to_json(sheet,{defval:''});
+        rows=rows.concat(data2);
+      });
+      // Borrar colección existente y reescribir
+      var snap=await getDocs(collection(db,colName));
+      var batch=writeBatch(db);
+      snap.docs.forEach(function(d){ batch.delete(doc(db,colName,d.id)); });
+      await batch.commit();
+      // Insertar nuevos registros en lotes de 500
+      for(var i=0;i<rows.length;i+=400){
+        var b2=writeBatch(db);
+        rows.slice(i,i+400).forEach(function(r){ b2.set(doc(collection(db,colName)),r); });
+        await b2.commit();
+      }
+      ANALITICOS[tipo]=rows;
+      updateStats();
+      if(inf) inf.textContent='✅ '+file.name+' — '+rows.length+' registros cargados.';
+      renderPreview();
+      toast('✅ '+rows.length+' registros de '+tipo+' guardados en Firestore.');
+    } catch(err){
+      if(inf) inf.textContent='❌ Error al cargar.';
+      toast('❌ Error al guardar en Firestore.');
+      console.error(err);
+    }
   };
   reader.readAsArrayBuffer(file);
 }
@@ -681,6 +738,15 @@ function renderDash(){
   if(!data.length){c.innerHTML='<p style="font-size:13px;color:var(--slate)">No hay preinscripciones aún.</p>';return;}
   c.innerHTML='<table class="tbl"><thead><tr><th>Nombre</th><th>DNI</th><th>Localidad</th><th>Sede</th><th>Turno</th><th>Fecha</th></tr></thead><tbody>'+data.map(function(r){return'<tr><td>'+r.ap+', '+r.nm+'</td><td>'+r.dni+'</td><td>'+r.loc+'</td><td>'+r.sede+'</td><td>'+r.turno+'</td><td>'+r.fecha+'</td></tr>'}).join('')+'</tbody></table>';
 }
+
+// Exponer funciones globalmente (necesario con type="module")
+window.login=login;window.logout=logout;window.goPanel=goPanel;
+window.saveInfo=saveInfo;window.saveHorarios=saveHorarios;window.addTurno=addTurno;window.removeTurno=removeTurno;
+window.saveDocs=saveDocs;window.addDocReq=addDocReq;window.addFAQ=addFAQ;window.removeFAQ=removeFAQ;window.renderFAQList=renderFAQList;
+window.saveRecursos=saveRecursos;window.addArch=addArch;window.removeArch=removeArch;window.renderArchList=renderArchList;
+window.loadAnalitico=loadAnalitico;window.renderPreview=renderPreview;
+window.renderInscr=renderInscr;window.exportInscr=exportInscr;
+window.renderDash=renderDash;window.loadAll=loadAll;
 </script>
 </body>
 </html>
