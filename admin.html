@@ -719,7 +719,22 @@ function renderInscr(){
 function exportInscr(){
   if(!INSCR.length){alert('No hay preinscripciones para exportar.');return;}
   var wb=XLSX.utils.book_new();
-  var data=INSCR.map(function(r,i){return{N:i+1,Apellido:r.ap,Nombre:r.nm,DNI:r.dni,Localidad:r.loc,Turno:r.turno,'Sede asignada':r.sede,Telefono:r.tel||'',Email:r.mail||'','Último año':r.año||'',Calle:r.calle||'',CP:r.cp||'',Observaciones:r.obs||'',Fecha:r.fecha};});
+  var data=INSCR.map(function(r,i){return{
+    N:i+1,
+    Apellido:String(r.ap||''),
+    Nombre:String(r.nm||''),
+    DNI:String(r.dni||''),
+    Localidad:String(r.loc||''),
+    Turno:String(r.turno||''),
+    'Sede asignada':String(r.sede||''),
+    Telefono:String(r.tel||''),
+    Email:String(r.mail||''),
+    'Último año':String(r.año||''),
+    Calle:String(r.calle||''),
+    CP:String(r.cp||''),
+    Observaciones:String(r.obs||''),
+    Fecha:String(r.fecha||'')
+  };});
   var ws=XLSX.utils.json_to_sheet(data);
   ws['!cols']=[{wch:4},{wch:18},{wch:18},{wch:12},{wch:18},{wch:14},{wch:22},{wch:12},{wch:28},{wch:20},{wch:25},{wch:6},{wch:30},{wch:12}];
   XLSX.utils.book_append_sheet(wb,'Preinscripciones',ws);
