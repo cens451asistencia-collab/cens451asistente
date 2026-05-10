@@ -740,10 +740,11 @@ function renderDash(){
 }
 
 // Exponer funciones globalmente (necesario con type="module")
-window.login=login;window.logout=logout;window.goPanel=goPanel;
+window.login=login;window.logout=logout;window.goPanel=goPanel;window.doLogin=doLogin;window.selRole=selRole;
 window.saveInfo=saveInfo;window.saveHorarios=saveHorarios;window.addTurno=addTurno;window.removeTurno=removeTurno;
-window.saveDocs=saveDocs;window.addDocReq=addDocReq;window.addFAQ=addFAQ;window.removeFAQ=removeFAQ;window.renderFAQList=renderFAQList;
-window.saveRecursos=saveRecursos;window.addArch=addArch;window.removeArch=removeArch;window.renderArchList=renderArchList;
+window.saveDocs=saveDocs;window.addDocReq=addDocReq;window.addFAQ=addFAQ;window.removeFAQ=removeFAQ;window.delFAQ=delFAQ;window.renderFAQList=renderFAQList;window.saveFAQ=saveFAQ;
+window.saveLinks=saveLinks;window.saveArchivos=saveArchivos;window.saveRecursos=saveRecursos;
+window.addArch=addArch;window.removeArch=removeArch;window.renderArchList=renderArchList;
 window.loadAnalitico=loadAnalitico;window.renderPreview=renderPreview;
 window.renderInscr=renderInscr;window.exportInscr=exportInscr;
 window.renderDash=renderDash;window.loadAll=loadAll;
