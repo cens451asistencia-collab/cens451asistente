@@ -537,7 +537,7 @@ body{font-family:'DM Sans',sans-serif;background:#f0f4fa;color:var(--ink);min-he
   </div>
 </div>
 
-<script>
+<script type="module">
 // ── DATOS SEDES ──
 var SEDES = {
   'Villa Luzuriaga':{n:'Sede Central',d:'Camacuá 3407 · Villa Luzuriaga'},
@@ -556,20 +556,30 @@ var SEDES = {
   'Otro':{n:'Sede Central (consultar reasignación)',d:'Camacuá 3407 · Villa Luzuriaga'}
 };
 
-// ── ANALÍTICOS (cargados desde panel directivo vía localStorage compartido) ──
-var ANALITICOS = {parciales:[], digital:[], papel:[]};
-try {
-  var ap = localStorage.getItem('cens451_analiticos');
-  if(ap) ANALITICOS = JSON.parse(ap);
-} catch(e){}
+// ── FIREBASE ──
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getFirestore, collection, addDoc, getDocs, query, where } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-// ── CONFIG desde directivo ──
+const firebaseConfig = {
+  apiKey: "AIzaSyCxMh6pKHWr9YM_kXlyS26fHOAGHh1Epqc",
+  authDomain: "cens451-asistente.firebaseapp.com",
+  projectId: "cens451-asistente",
+  storageBucket: "cens451-asistente.firebasestorage.app",
+  messagingSenderId: "44655214447",
+  appId: "1:44655214447:web:ad05f549de92abfaee329a"
+};
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+// ── ANALÍTICOS (desde Firestore) ──
+var ANALITICOS = {parciales:[], digital:[], papel:[]};
+
+// ── CONFIG desde directivo (sigue en localStorage por ahora) ──
 var CFG = {horarios:[{n:'Tarde',h:'14:00–18:00 hs',d:'Lunes a viernes'},{n:'Noche',h:'18:00–22:00 hs',d:'Lunes a viernes'}], faq:[], docsLinks:[], archivosDocente:[]};
 try { var c = localStorage.getItem('cens451_cfg'); if(c) CFG = JSON.parse(c); } catch(e){}
 
 // ── INSCRIPCIONES ──
 var INSCR = [];
-try { var ii = localStorage.getItem('cens451_inscr'); if(ii) INSCR = JSON.parse(ii); } catch(e){}
 
 var PROFILE = null;
 
@@ -685,8 +695,12 @@ function getReply(msg){
   if(m.includes('gratis')||m.includes('gratuito')||m.includes('costo')||m.includes('pago')||m.includes('arancel')||m.includes('cobran')||m.includes('plata')){
     return '✅ El CENS 451 es completamente <b>gratuito</b>. Es una institución pública del Estado argentino. No hay ningún arancel.';
   }
-  if(m.includes('analitico')||m.includes('titulo')||m.includes('tramit')){
-    return '🎓 Para consultar tu analítico:<br>👉 Andá a <b>"Panel Alumno"</b> arriba<br>🔍 Ingresá tu DNI y/o apellido<br>📊 Podés ver si está disponible tu analítico parcial, final digital o final en papel.';
+  if(m.includes('analitico')||m.includes('titulo')||m.includes('tramit')||m.includes('consultar')||m.includes('disponible')){
+    setTimeout(function(){
+      addMsg('Para consultar tu analítico necesito tu <b>DNI</b> o tu <b>apellido</b>. ¿Podés ingresarlo acá?','bot');
+      window._esperandoBusqueda=true;
+    },400);
+    return null;
   }
   if(m.includes('contact')||m.includes('telefon')||m.includes('llamar')||m.includes('whats')){
     return '📞 <b>Tel/WhatsApp:</b> 11 5312 6676<br>📱 <b>Instagram:</b> @cens.451<br>📍 <b>Sede Central:</b> Camacuá 3407, Villa Luzuriaga';
@@ -713,10 +727,30 @@ function addMsg(t,w){
 }
 function sendMsg(){
   var i=document.getElementById('chatInp'),v=i.value.trim();
-  if(!v)return;addMsg(v,'user');i.value='';
-  setTimeout(function(){addMsg(getReply(v),'bot')},380);
+  if(!v)return;
+  addMsg(v,'user');i.value='';
+  // Si Valeria está esperando DNI/apellido para buscar
+  if(window._esperandoBusqueda){
+    window._esperandoBusqueda=false;
+    var dni=v.replace(/\./g,'').replace(/\s/g,'');
+    var esNumero=/^\d+$/.test(dni);
+    // Crear div temporal para el resultado en el chat
+    var tmpDiv=document.createElement('div');
+    tmpDiv.className='msg msg-bot';
+    tmpDiv.innerHTML='🔍 Buscando...';
+    document.getElementById('chatMsgs').appendChild(tmpDiv);
+    document.getElementById('chatMsgs').scrollTop=document.getElementById('chatMsgs').scrollHeight;
+    buscarAnalitico(esNumero?dni:'', esNumero?'':v.toLowerCase().trim(), tmpDiv);
+    return;
+  }
+  var reply=getReply(v);
+  if(reply!==null) setTimeout(function(){addMsg(reply,'bot')},380);
 }
-function sendQuick(t){addMsg(t,'user');setTimeout(function(){addMsg(getReply(t),'bot')},380);}
+function sendQuick(t){
+  addMsg(t,'user');
+  var reply=getReply(t);
+  if(reply!==null) setTimeout(function(){addMsg(reply,'bot')},380);
+}
 
 // ── FORMULARIO ──
 function asignarSede(){
@@ -733,44 +767,68 @@ function enviarForm(){
   var loc=document.getElementById('f-loc').value;
   var s=SEDES[loc]||{n:'Sede Central'};
   var obj={ap:document.getElementById('f-ap').value,nm:document.getElementById('f-nm').value,dni:document.getElementById('f-dni').value,fec:document.getElementById('f-fec').value,tel:document.getElementById('f-tel').value,mail:document.getElementById('f-mail').value,calle:document.getElementById('f-calle').value,loc:loc,cp:document.getElementById('f-cp').value,año:document.getElementById('f-año').value,turno:document.getElementById('f-turno').value,obs:document.getElementById('f-obs').value,sede:s.n,fecha:new Date().toLocaleDateString('es-AR')};
-  INSCR.push(obj);
-  try{localStorage.setItem('cens451_inscr',JSON.stringify(INSCR));}catch(e){}
-  document.getElementById('fOk').style.display='block';
-  setTimeout(function(){document.getElementById('fOk').style.display='none';},7000);
-  ['f-ap','f-nm','f-dni','f-fec','f-tel','f-mail','f-calle','f-cp','f-obs'].forEach(function(id){var el=document.getElementById(id);if(el)el.value='';});
-  ['f-loc','f-año','f-turno'].forEach(function(id){var el=document.getElementById(id);if(el)el.selectedIndex=0;});
-  document.getElementById('sedeTag').style.display='none';
+  addDoc(collection(db,'preinscripciones'), obj).then(function(){
+    document.getElementById('fOk').style.display='block';
+    setTimeout(function(){document.getElementById('fOk').style.display='none';},7000);
+    ['f-ap','f-nm','f-dni','f-fec','f-tel','f-mail','f-calle','f-cp','f-obs'].forEach(function(id){var el=document.getElementById(id);if(el)el.value='';});
+    ['f-loc','f-año','f-turno'].forEach(function(id){var el=document.getElementById(id);if(el)el.selectedIndex=0;});
+    document.getElementById('sedeTag').style.display='none';
+  }).catch(function(e){alert('Error al enviar. Intentá de nuevo o llamanos al 11 5312-6676.');console.error(e);});
 }
 
 // ── BUSCAR ANALÍTICO ──
-function buscar(){
+async function buscarAnalitico(dni, ape, resEl){
+  resEl.innerHTML='<div style="padding:12px;font-size:13px;color:var(--slate)">🔍 Buscando...</div>';
+  function match(r){
+    var ok=true;
+    if(dni) ok=ok&&String(r.dni||'').replace(/\./g,'').replace(/\s/g,'')===dni;
+    if(ape) ok=ok&&String(r.ap||'').toLowerCase().includes(ape);
+    return ok;
+  }
+  try {
+    var [snapP, snapD, snapPa] = await Promise.all([
+      getDocs(collection(db,'analiticos_parcial')),
+      getDocs(collection(db,'analiticos_final_digital')),
+      getDocs(collection(db,'analiticos_final_papel'))
+    ]);
+    var p=snapP.docs.map(d=>d.data()).filter(match);
+    var d=snapD.docs.map(d=>d.data()).filter(match);
+    var pa=snapPa.docs.map(d=>d.data()).filter(match);
+    var total=snapP.size+snapD.size+snapPa.size;
+    if(total===0){
+      resEl.innerHTML='<div style="background:#fef3c7;border-radius:8px;padding:12px;font-size:13px;color:#92400e;margin-top:12px">⚠️ El sistema aún no tiene datos cargados. Comunicate con secretaría al <b>11 5312-6676</b>.</div>';
+      return null;
+    }
+    if(p.length||d.length||pa.length){
+      resEl.innerHTML='<div style="background:#d1fae5;border-radius:8px;padding:14px;font-size:14px;color:#065f46;margin-top:12px">✅ <b>Tu analítico está disponible.</b><br>Deberás comunicarte al número <b>11 5312-6676</b> para coordinar la entrega.</div>';
+      return true;
+    } else {
+      resEl.innerHTML='<div style="background:#fef3c7;border-radius:8px;padding:14px;font-size:14px;color:#92400e;margin-top:12px">⏳ <b>Tu trámite aún está pendiente.</b><br>Volvé a consultar la página más adelante. Gracias.</div>';
+      return false;
+    }
+  } catch(e) {
+    resEl.innerHTML='<div style="background:#fee2e2;border-radius:8px;padding:12px;font-size:13px;color:#991b1b;margin-top:12px">❌ Error al conectar. Intentá de nuevo o llamanos al <b>11 5312-6676</b>.</div>';
+    console.error(e);
+    return null;
+  }
+}
+
+async function buscar(){
   var dni=document.getElementById('aDNI').value.trim().replace(/\./g,'');
   var ape=document.getElementById('aApe').value.trim().toLowerCase();
   if(!dni&&!ape){alert('Ingresá al menos el DNI o el apellido.');return;}
-  var res=document.getElementById('aResult');
-  function match(r){
-    var vals=Object.values(r).map(function(v){return String(v).toLowerCase()});
-    var ok=true;
-    if(dni) ok=ok&&vals.some(function(v){return v.replace(/\./g,'').replace(/\s/g,'')===dni;});
-    if(ape) ok=ok&&vals.some(function(v){return v.includes(ape);});
-    return ok;
-  }
-  var p=ANALITICOS.parciales.filter(match);
-  var d=ANALITICOS.digital.filter(match);
-  var pa=ANALITICOS.papel.filter(match);
-  if(!ANALITICOS.parciales.length&&!ANALITICOS.digital.length&&!ANALITICOS.papel.length){
-    res.innerHTML='<div style="background:#fef3c7;border-radius:8px;padding:12px;font-size:12px;color:#92400e;margin-top:12px">⚠️ El sistema aún no tiene datos cargados. Comunicate con secretaría: <b>11 5312 6676</b></div>';return;
-  }
-  if(!p.length&&!d.length&&!pa.length){
-    res.innerHTML='<div style="background:#fee2e2;border-radius:8px;padding:12px;font-size:12px;color:#991b1b;margin-top:12px">❌ No se encontraron analíticos para los datos ingresados. Comunicate con secretaría: <b>11 5312 6676</b></div>';return;
-  }
-  var html='<table class="rtable"><thead><tr><th>Tipo</th><th>Estado</th><th>Detalle</th></tr></thead><tbody>';
-  html+='<tr><td>📊 Analítico Parcial</td><td>'+(p.length?'<span class="badge b-ok">✅ Disponible</span>':'<span class="badge b-no">❌ No disponible</span>')+'</td><td style="font-size:11px">'+(p.length?'Solicitalo en secretaría':'Sin registros aún')+'</td></tr>';
-  html+='<tr><td>💻 Final Digital</td><td>'+(d.length?'<span class="badge b-dig">✅ Disponible</span>':'<span class="badge b-no">❌ No disponible</span>')+'</td><td style="font-size:11px">'+(d.length?'Disponible en formato digital':'Sin registros aún')+'</td></tr>';
-  html+='<tr><td>📃 Final en Papel</td><td>'+(pa.length?'<span class="badge b-ok">✅ Listo para retirar</span>':'<span class="badge b-no">❌ No disponible</span>')+'</td><td style="font-size:11px">'+(pa.length?'Retirá con DNI en secretaría':'Sin registros aún')+'</td></tr>';
-  html+='</tbody></table>';
-  res.innerHTML='<div style="margin-top:12px">'+html+'</div>';
+  await buscarAnalitico(dni, ape, document.getElementById('aResult'));
 }
+
+// Exponer funciones al scope global (necesario con type="module")
+window.show = show;
+window.setProfile = setProfile;
+window.sendMsg = sendMsg;
+window.sendQuick = sendQuick;
+window.asignarSede = asignarSede;
+window.enviarForm = enviarForm;
+window.buscar = buscar;
+window.buscarAnalitico = buscarAnalitico;
 </script>
 </body>
 </html>
