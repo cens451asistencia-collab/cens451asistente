@@ -314,7 +314,7 @@ body{font-family:'DM Sans',sans-serif;background:#eef2f8;color:var(--ink);min-he
             <div class="upzone" onclick="document.getElementById('upParcial').click()">
               <div class="up-ico">📊</div><p><b>Clic aquí</b> para subir el archivo</p>
               <p style="font-size:11px;margin-top:3px;color:#94a3b8">.xlsx · .xls</p>
-              <input type="file" id="upParcial" accept=".xlsx,.xls" onchange="loadAnalitico(this,'parciales')">
+              <input type="file" id="upParcial" accept=".xlsx,.xls">
             </div>
             <div class="up-info" id="inf-parciales"></div>
           </div>
@@ -324,7 +324,7 @@ body{font-family:'DM Sans',sans-serif;background:#eef2f8;color:var(--ink);min-he
             <div class="upzone" onclick="document.getElementById('upDigital').click()">
               <div class="up-ico">💻</div><p><b>Clic aquí</b> para subir el archivo</p>
               <p style="font-size:11px;margin-top:3px;color:#94a3b8">.xlsx · .xls</p>
-              <input type="file" id="upDigital" accept=".xlsx,.xls" onchange="loadAnalitico(this,'digital')">
+              <input type="file" id="upDigital" accept=".xlsx,.xls">
             </div>
             <div class="up-info" id="inf-digital"></div>
           </div>
@@ -334,7 +334,7 @@ body{font-family:'DM Sans',sans-serif;background:#eef2f8;color:var(--ink);min-he
             <div class="upzone" onclick="document.getElementById('upPapel').click()">
               <div class="up-ico">📃</div><p><b>Clic aquí</b> para subir el archivo</p>
               <p style="font-size:11px;margin-top:3px;color:#94a3b8">.xlsx · .xls</p>
-              <input type="file" id="upPapel" accept=".xlsx,.xls" onchange="loadAnalitico(this,'papel')">
+              <input type="file" id="upPapel" accept=".xlsx,.xls">
             </div>
             <div class="up-info" id="inf-papel"></div>
           </div>
@@ -748,6 +748,16 @@ window.addArch=addArch;window.delArch=delArch;window.renderArchList=renderArchLi
 window.loadAnalitico=loadAnalitico;window.renderPreview=renderPreview;
 window.renderInscr=renderInscr;window.exportInscr=exportInscr;
 window.renderDash=renderDash;window.loadAll=loadAll;
+
+// Event listeners para inputs de archivos (dentro del módulo para evitar ReferenceError)
+document.addEventListener('DOMContentLoaded', function(){
+  var upP=document.getElementById('upParcial');
+  var upD=document.getElementById('upDigital');
+  var upPa=document.getElementById('upPapel');
+  if(upP) upP.addEventListener('change', function(){ loadAnalitico(this,'parciales'); });
+  if(upD) upD.addEventListener('change', function(){ loadAnalitico(this,'digital'); });
+  if(upPa) upPa.addEventListener('change', function(){ loadAnalitico(this,'papel'); });
+});
 </script>
 </body>
 </html>
