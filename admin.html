@@ -743,21 +743,19 @@ function renderDash(){
 window.logout=logout;window.goPanel=goPanel;window.doLogin=doLogin;window.selRole=selRole;
 window.saveInfo=saveInfo;window.saveHorarios=saveHorarios;window.addTurno=addTurno;
 window.saveDocs=saveDocs;window.addDocReq=addDocReq;window.addFAQ=addFAQ;window.delFAQ=delFAQ;window.renderFAQList=renderFAQList;window.saveFAQ=saveFAQ;
-window.saveLinks=saveLinks;window.saveArchivos=saveArchivos;window.saveRecursos=saveRecursos;
+window.saveLinks=saveLinks;window.saveArchivos=saveArchivos;
 window.addArch=addArch;window.delArch=delArch;window.renderArchList=renderArchList;
 window.loadAnalitico=loadAnalitico;window.renderPreview=renderPreview;
 window.renderInscr=renderInscr;window.exportInscr=exportInscr;
 window.renderDash=renderDash;window.loadAll=loadAll;
 
-// Event listeners para inputs de archivos (dentro del módulo para evitar ReferenceError)
-document.addEventListener('DOMContentLoaded', function(){
-  var upP=document.getElementById('upParcial');
-  var upD=document.getElementById('upDigital');
-  var upPa=document.getElementById('upPapel');
-  if(upP) upP.addEventListener('change', function(){ loadAnalitico(this,'parciales'); });
-  if(upD) upD.addEventListener('change', function(){ loadAnalitico(this,'digital'); });
-  if(upPa) upPa.addEventListener('change', function(){ loadAnalitico(this,'papel'); });
-});
+// Event listeners para inputs de archivos
+var upP=document.getElementById('upParcial');
+var upD=document.getElementById('upDigital');
+var upPa=document.getElementById('upPapel');
+if(upP) upP.addEventListener('change', function(){ loadAnalitico(this,'parciales'); });
+if(upD) upD.addEventListener('change', function(){ loadAnalitico(this,'digital'); });
+if(upPa) upPa.addEventListener('change', function(){ loadAnalitico(this,'papel'); });
 </script>
 </body>
 </html>
