@@ -287,7 +287,7 @@ body{font-family:'DM Sans',sans-serif;background:#eef2f8;color:var(--ink);min-he
 
       <!-- ────── PANEL: RECURSOS DOCENTES ────── -->
       <div id="pan-recursos" class="panel">
-        <div class="card">
+        <div class="card" id="card-links-edit">
           <h3>👩‍🏫 Links para docentes</h3>
           <p class="desc">Valeria usa estos links cuando un docente pregunta sobre proyecto anual o actualización de datos.</p>
           <div class="cf2">
@@ -296,12 +296,19 @@ body{font-family:'DM Sans',sans-serif;background:#eef2f8;color:var(--ink);min-he
           </div>
           <button class="btn-s" onclick="saveLinks()">💾 Guardar links</button>
         </div>
+        <div class="card" id="card-links-view" style="display:none;margin-top:0">
+          <h3>👩‍🏫 Links disponibles</h3>
+          <p class="desc">Estos links también los podés consultar hablando con Valeria.</p>
+          <div id="links-view-content"></div>
+        </div>
         <div class="card" style="margin-top:18px">
           <h3>📁 Archivos para el plantel docente</h3>
-          <p class="desc">Subí links a documentos importantes (Drive, Dropbox, etc.). Los docentes los pueden ver preguntándole a Valeria.</p>
+          <p class="desc">Documentos importantes para el plantel.</p>
           <div id="archList"></div>
-          <button class="btn-add" onclick="addArch()">+ Agregar archivo / documento</button>
-          <button class="btn-s" style="margin-top:10px" onclick="saveArchivos()">💾 Guardar archivos</button>
+          <div id="arch-edit-btns">
+            <button class="btn-add" onclick="addArch()">+ Agregar archivo / documento</button>
+            <button class="btn-s" style="margin-top:10px" onclick="saveArchivos()">💾 Guardar archivos</button>
+          </div>
         </div>
       </div>
 
@@ -569,6 +576,7 @@ function loadFieldsFromCFG(){
   if(document.getElementById('horExtra')) document.getElementById('horExtra').value=CFG.horarioExtra||'';
   if(document.getElementById('docsExtra')) document.getElementById('docsExtra').value=CFG.docsExtra||'';
   renderArchList();
+  applyRoleRestrictions();
 }
 
 function saveInfo(){
@@ -650,14 +658,45 @@ function saveLinks(){
   CFG.datosLink=document.getElementById('rc-datos').value;
   saveCFG();toast('✅ Links guardados.');
 }
+
+function applyRoleRestrictions(){
+  var esDocente=(currentRole==='docente');
+  var cardEdit=document.getElementById('card-links-edit');
+  var cardView=document.getElementById('card-links-view');
+  var archBtns=document.getElementById('arch-edit-btns');
+  if(esDocente){
+    if(cardEdit)cardEdit.style.display='none';
+    if(cardView){cardView.style.display='block';
+      var vc=document.getElementById('links-view-content');
+      if(vc){
+        vc.innerHTML='';
+        if(CFG.proyectoLink)vc.innerHTML+='<div style="margin-bottom:10px"><b>Proyecto Anual:</b> <a href="'+CFG.proyectoLink+'" target="_blank" style="color:var(--blue)">'+CFG.proyectoLink+'</a></div>';
+        if(CFG.datosLink)vc.innerHTML+='<div><b>Actualización de datos:</b> <a href="'+CFG.datosLink+'" target="_blank" style="color:var(--blue)">'+CFG.datosLink+'</a></div>';
+        if(!CFG.proyectoLink&&!CFG.datosLink)vc.innerHTML='<p style="color:var(--slate4)">No hay links disponibles por el momento.</p>';
+      }
+    }
+    if(archBtns)archBtns.style.display='none';
+  } else {
+    if(cardEdit)cardEdit.style.display='block';
+    if(cardView)cardView.style.display='none';
+    if(archBtns)archBtns.style.display='block';
+  }
+}
 function renderArchList(){
   var c=document.getElementById('archList');if(!c)return;c.innerHTML='';
+  var esDocente=(currentRole==='docente');
   (CFG.archivosDocente||[]).forEach(function(a,i){
     var d=document.createElement('div');d.className='arch-item';
-    d.innerHTML='<input value="'+a.nombre+'" placeholder="Nombre del archivo" oninput="setCFGArch('+i+',\'nombre\',this.value)">'
-      +'<input value="'+a.url+'" placeholder="Link (Drive, Dropbox...)" oninput="setCFGArch('+i+',\'url\',this.value)">'
-      +'<input value="'+(a.desc||'')+'" placeholder="Descripción breve (opcional)" style="max-width:200px" oninput="setCFGArch('+i+',\'desc\',this.value)">'
-      +'<button class="arch-del" onclick="delArch('+i+')">✕</button>';
+    if(esDocente){
+      d.innerHTML='<span style="flex:1;padding:6px 8px;background:var(--slate1);border-radius:6px;font-size:13px">'+a.nombre+'</span>'
+        +'<a href="'+a.url+'" target="_blank" style="flex:2;padding:6px 8px;background:var(--slate1);border-radius:6px;font-size:13px;color:var(--blue);text-decoration:none;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+a.url+'</a>'
+        +(a.desc?'<span style="flex:1;padding:6px 8px;font-size:12px;color:var(--slate4)">'+a.desc+'</span>':'');
+    } else {
+      d.innerHTML='<input value="'+a.nombre+'" placeholder="Nombre del archivo" oninput="setCFGArch('+i+',\'nombre\',this.value)">'
+        +'<input value="'+a.url+'" placeholder="Link (Drive, Dropbox...)" oninput="setCFGArch('+i+',\'url\',this.value)">'
+        +'<input value="'+(a.desc||'')+'" placeholder="Descripción breve (opcional)" style="max-width:200px" oninput="setCFGArch('+i+',\'desc\',this.value)">'
+        +'<button class="arch-del" onclick="delArch('+i+')">✕</button>';
+    }
     c.appendChild(d);
   });
 }
@@ -794,7 +833,7 @@ window.setCFGArch=setCFGArch;
 window.saveInfo=saveInfo;window.saveHorarios=saveHorarios;window.addTurno=addTurno;
 window.saveDocs=saveDocs;window.addDocReq=addDocReq;window.addFAQ=addFAQ;window.delFAQ=delFAQ;window.renderFAQList=renderFAQList;window.saveFAQ=saveFAQ;
 window.saveLinks=saveLinks;window.saveArchivos=saveArchivos;
-window.addArch=addArch;window.delArch=delArch;window.renderArchList=renderArchList;
+window.addArch=addArch;window.delArch=delArch;window.renderArchList=renderArchList;window.applyRoleRestrictions=applyRoleRestrictions;
 window.loadAnalitico=loadAnalitico;window.renderPreview=renderPreview;
 window.renderInscr=renderInscr;window.exportInscr=exportInscr;
 window.renderDash=renderDash;window.loadAll=loadAll;
