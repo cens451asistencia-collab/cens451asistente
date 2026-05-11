@@ -466,6 +466,8 @@ var NAV_ITEMS = {
     {id:'dashboard',ic:'📊',lbl:'Dashboard'},
     {id:'inscripciones',ic:'📋',lbl:'Preinscripciones'},
     {id:'analiticos',ic:'🎓',lbl:'Analíticos'},
+    {sec:'Recursos'},
+    {id:'recursos',ic:'👩‍🏫',lbl:'Recursos docentes'},
   ],
   docente:[
     {sec:'Mi espacio'},
@@ -660,7 +662,7 @@ function saveLinks(){
 }
 
 function applyRoleRestrictions(){
-  var esDocente=(currentRole==='docente');
+  var esDocente=(currentRole==='docente'||currentRole==='preceptor');
   var cardEdit=document.getElementById('card-links-edit');
   var cardView=document.getElementById('card-links-view');
   var archBtns=document.getElementById('arch-edit-btns');
@@ -684,7 +686,7 @@ function applyRoleRestrictions(){
 }
 function renderArchList(){
   var c=document.getElementById('archList');if(!c)return;c.innerHTML='';
-  var esDocente=(currentRole==='docente');
+  var esDocente=(currentRole==='docente'||currentRole==='preceptor');
   (CFG.archivosDocente||[]).forEach(function(a,i){
     var d=document.createElement('div');d.className='arch-item';
     if(esDocente){
