@@ -285,6 +285,22 @@ body{font-family:'DM Sans',sans-serif;background:#eef2f8;color:var(--ink);min-he
         </div>
       </div>
 
+      <!-- ────── PANEL: CHIPS DE VALERIA ────── -->
+      <div id="pan-chips" class="panel">
+        <div class="card">
+          <h3>🏷️ Chips de Valeria</h3>
+          <p class="desc">Estos son los botones de acceso rápido que aparecen en el chat de Valeria según el perfil del usuario. Podés editar el texto del botón y el mensaje que envía al hacer clic.</p>
+          <div style="display:flex;gap:10px;margin-bottom:16px">
+            <button class="pbtn sel" id="chip-tab-alumno" onclick="switchChipTab('alumno')">🎓 Alumno/a</button>
+            <button class="pbtn" id="chip-tab-egresado" onclick="switchChipTab('egresado')">📄 Egresado/a</button>
+            <button class="pbtn" id="chip-tab-docente" onclick="switchChipTab('docente')">👩‍🏫 Docente</button>
+          </div>
+          <div id="chipList"></div>
+          <button class="btn-add" onclick="addChip()">+ Agregar chip</button>
+          <button class="btn-s" style="margin-top:10px" onclick="saveChips()">💾 Guardar chips</button>
+        </div>
+      </div>
+
       <!-- ────── PANEL: RECURSOS DOCENTES ────── -->
       <div id="pan-recursos" class="panel">
         <div class="card" id="card-links-edit">
@@ -456,6 +472,7 @@ var NAV_ITEMS = {
     {id:'horarios',ic:'⏰',lbl:'Horarios y turnos'},
     {id:'docs',ic:'📄',lbl:'Documentos requeridos'},
     {id:'faq',ic:'💬',lbl:'Preguntas frecuentes'},
+    {id:'chips',ic:'🏷️',lbl:'Chips de Valeria'},
     {id:'recursos',ic:'👩‍🏫',lbl:'Recursos docentes'},
     {sec:'Gestión'},
     {id:'analiticos',ic:'🎓',lbl:'Cargar analíticos'},
@@ -513,7 +530,7 @@ function goPanel(id){
 // ─────────────────────────────────────
 // STORAGE
 // ─────────────────────────────────────
-var CFG={horarios:[{n:'Tarde',h:'14:00 a 18:00 hs',d:'Lunes a viernes'},{n:'Noche',h:'18:00 a 22:00 hs',d:'Lunes a viernes'}],horarioExtra:'',documentos:['DNI (original y fotocopia)','Certificado de estudios previos','2 fotos tamaño 4x4','Constancia de domicilio'],docsExtra:'',faq:[],proyectoLink:'',datosLink:'',archivosDocente:[],periodo:'Todo el año con cupo disponible'};
+var CFG={horarios:[{n:'Tarde',h:'14:00 a 18:00 hs',d:'Lunes a viernes'},{n:'Noche',h:'18:00 a 22:00 hs',d:'Lunes a viernes'}],horarioExtra:'',documentos:['DNI (original y fotocopia)','Certificado de estudios previos','Constancia de domicilio'],docsExtra:'',faq:[],proyectoLink:'',datosLink:'',archivosDocente:[],periodo:'Todo el año con cupo disponible',chips:{alumno:[['⏰ Horarios','¿Cuáles son los horarios?'],['📍 Sede más cercana','¿Qué sede me queda más cerca?'],['📄 Documentos','¿Qué documentos necesito?'],['💰 Es gratuito?','¿El CENS es gratuito?'],['📋 Inscribirme','¿Cómo me inscribo?']],egresado:[['🔍 Mi analítico','¿Cómo consulto mi analítico?'],['📃 Retiro en papel','¿Cómo retiro el analítico en papel?'],['📞 Contacto','¿Cómo los contacto?']],docente:[['📝 Proyecto anual','¿Cómo envío el proyecto anual?'],['🔄 Actualizar datos','¿Cómo actualizo mis datos?'],['📁 Archivos','¿Qué archivos subió la directora?'],['📞 Contacto','¿Cómo los contacto?']]}};
 var ANALITICOS={parciales:[],digital:[],papel:[]};
 var INSCR=[];
 
@@ -527,6 +544,12 @@ function loadAll(){
 }
 
 function saveCFG(){try{localStorage.setItem('cens451_cfg',JSON.stringify(CFG));}catch(e){}}
+async function saveCFGFirestore(){
+  try{
+    await setDoc(doc(db,'config','main'),CFG);
+    console.log('CFG guardado en Firestore');
+  }catch(e){console.error('Error guardando CFG:',e);}
+}
 
 async function cargarAnaliticosFirestore(){
   try {
@@ -578,6 +601,7 @@ function loadFieldsFromCFG(){
   if(document.getElementById('horExtra')) document.getElementById('horExtra').value=CFG.horarioExtra||'';
   if(document.getElementById('docsExtra')) document.getElementById('docsExtra').value=CFG.docsExtra||'';
   renderArchList();
+  renderChipList();
   applyRoleRestrictions();
 }
 
@@ -589,7 +613,7 @@ function saveInfo(){
   CFG.ig=document.getElementById('ci-ig').value;
   CFG.web=document.getElementById('ci-web').value;
   CFG.desc=document.getElementById('ci-desc').value;
-  saveCFG();toast('✅ Información guardada. Valeria ya la usa.');
+  saveCFG();toast('✅ Información guardada. Valeria ya la usa.');saveCFGFirestore();
 }
 
 // ─────────────────────────────────────
@@ -617,7 +641,7 @@ function saveDocs(){
   CFG.documentos=[];
   document.querySelectorAll('#docsList .ri input').forEach(function(i){if(i.value)CFG.documentos.push(i.value);});
   CFG.docsExtra=document.getElementById('docsExtra').value;
-  saveCFG();toast('✅ Documentos guardados.');
+  saveCFG();toast('✅ Documentos guardados.');saveCFGFirestore();
 }
 function addDocReq(){
   var d=document.createElement('div');d.className='ri';
@@ -658,7 +682,7 @@ function saveFAQ(){
 function saveLinks(){
   CFG.proyectoLink=document.getElementById('rc-proyecto').value;
   CFG.datosLink=document.getElementById('rc-datos').value;
-  saveCFG();toast('✅ Links guardados.');
+  saveCFG();toast('✅ Links guardados.');saveCFGFirestore();
 }
 
 function applyRoleRestrictions(){
@@ -704,7 +728,39 @@ function renderArchList(){
 }
 function addArch(){CFG.archivosDocente.push({nombre:'',url:'',desc:''});renderArchList();}
 function delArch(i){CFG.archivosDocente.splice(i,1);renderArchList();}
-function saveArchivos(){saveCFG();toast('✅ Archivos guardados. Valeria los muestra a los docentes.');}
+function saveArchivos(){saveCFG();toast('✅ Archivos guardados. Valeria los muestra a los docentes.');saveCFGFirestore();}
+
+// ── CHIPS ──
+var currentChipTab='alumno';
+function switchChipTab(tab){
+  currentChipTab=tab;
+  ['alumno','egresado','docente'].forEach(function(t){
+    var btn=document.getElementById('chip-tab-'+t);
+    if(btn) btn.classList.toggle('sel',t===tab);
+  });
+  renderChipList();
+}
+function renderChipList(){
+  var c=document.getElementById('chipList');if(!c)return;c.innerHTML='';
+  if(!CFG.chips) CFG.chips={alumno:[],egresado:[],docente:[]};
+  var list=CFG.chips[currentChipTab]||[];
+  list.forEach(function(ch,i){
+    var d=document.createElement('div');
+    d.style.cssText='display:flex;gap:8px;margin-bottom:8px;align-items:center';
+    d.innerHTML='<input value="'+ch[0]+'" placeholder="Texto del botón (ej: ⏰ Horarios)" style="flex:1" oninput="CFG.chips[currentChipTab]['+i+'][0]=this.value">'
+      +'<input value="'+ch[1]+'" placeholder="Mensaje que envía (ej: ¿Cuáles son los horarios?)" style="flex:2" oninput="CFG.chips[currentChipTab]['+i+'][1]=this.value">'
+      +'<button class="arch-del" onclick="delChip('+i+')">✕</button>';
+    c.appendChild(d);
+  });
+}
+function addChip(){
+  if(!CFG.chips) CFG.chips={alumno:[],egresado:[],docente:[]};
+  if(!CFG.chips[currentChipTab]) CFG.chips[currentChipTab]=[];
+  CFG.chips[currentChipTab].push(['','']);
+  renderChipList();
+}
+function delChip(i){CFG.chips[currentChipTab].splice(i,1);renderChipList();}
+function saveChips(){saveCFG();toast('✅ Chips guardados. Valeria ya los usa.');saveCFGFirestore();}
 function setCFGArch(i,campo,val){if(CFG.archivosDocente[i])CFG.archivosDocente[i][campo]=val;}
 
 // ─────────────────────────────────────
@@ -835,7 +891,7 @@ window.setCFGArch=setCFGArch;
 window.saveInfo=saveInfo;window.saveHorarios=saveHorarios;window.addTurno=addTurno;
 window.saveDocs=saveDocs;window.addDocReq=addDocReq;window.addFAQ=addFAQ;window.delFAQ=delFAQ;window.renderFAQList=renderFAQList;window.saveFAQ=saveFAQ;
 window.saveLinks=saveLinks;window.saveArchivos=saveArchivos;
-window.addArch=addArch;window.delArch=delArch;window.renderArchList=renderArchList;window.applyRoleRestrictions=applyRoleRestrictions;
+window.addArch=addArch;window.delArch=delArch;window.renderArchList=renderArchList;window.applyRoleRestrictions=applyRoleRestrictions;window.switchChipTab=switchChipTab;window.addChip=addChip;window.delChip=delChip;window.saveChips=saveChips;window.saveCFGFirestore=saveCFGFirestore;
 window.loadAnalitico=loadAnalitico;window.renderPreview=renderPreview;
 window.renderInscr=renderInscr;window.exportInscr=exportInscr;
 window.renderDash=renderDash;window.loadAll=loadAll;
