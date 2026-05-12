@@ -774,7 +774,7 @@ function renderRespList(){
     var d=document.createElement('div');
     d.style.cssText='margin-bottom:16px';
     d.innerHTML='<label style="font-weight:600;font-size:13px;display:block;margin-bottom:4px">'+RESP_LABELS[key]+'</label>'
-      +'<textarea rows="3" style="width:100%;font-size:12px;padding:8px;border-radius:6px;border:1px solid var(--slate2);font-family:monospace;resize:vertical" oninput="CFG.respuestas[''+key+'']=this.value">'+val+'</textarea>';
+      +'<textarea rows="3" style="width:100%;font-size:12px;padding:8px;border-radius:6px;border:1px solid var(--slate2);font-family:monospace;resize:vertical" data-key="'+key+'" oninput="CFG.respuestas[this.dataset.key]=this.value">'+val+'</textarea>';
     c.appendChild(d);
   });
 }
