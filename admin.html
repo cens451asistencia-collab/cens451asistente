@@ -238,6 +238,9 @@ body{font-family:'DM Sans',sans-serif;background:#eef2f8;color:var(--ink);min-he
           <div class="cf"><label>Descripción corta (aparece en el hero del sitio)</label>
             <textarea id="ci-desc">Educación secundaria para adultos. Horarios pensados para trabajadores y familias. Docentes comprometidos. Tres sedes en La Matanza.</textarea>
           </div>
+          <div class="cf"><label>Mensaje de bienvenida de Valeria (aparece al abrir el chat)</label>
+            <textarea id="ci-bienvenida" placeholder="Ej: ¡Hola! 👋 Soy Valeria. ¿Con cuál de estas opciones te identificás?"></textarea>
+          </div>
           <button class="btn-s" onclick="saveInfo()">💾 Guardar información</button>
         </div>
       </div>
@@ -628,6 +631,7 @@ function loadFieldsFromCFG(){
   if(document.getElementById('ci-email')) document.getElementById('ci-email').value=CFG.email||'';
   if(document.getElementById('ci-ig')) document.getElementById('ci-ig').value=CFG.ig||'Cens.451';
   if(document.getElementById('ci-periodo')) document.getElementById('ci-periodo').value=CFG.periodo||'Todo el año con cupo disponible';
+  if(document.getElementById('ci-bienvenida')) document.getElementById('ci-bienvenida').value=CFG.bienvenida||'';
   if(document.getElementById('rc-proyecto')) document.getElementById('rc-proyecto').value=CFG.proyectoLink||'';
   if(document.getElementById('rc-datos')) document.getElementById('rc-datos').value=CFG.datosLink||'';
   if(document.getElementById('horExtra')) document.getElementById('horExtra').value=CFG.horarioExtra||'';
@@ -646,6 +650,7 @@ function saveInfo(){
   CFG.ig=document.getElementById('ci-ig').value;
   CFG.web=document.getElementById('ci-web').value;
   CFG.desc=document.getElementById('ci-desc').value;
+  CFG.bienvenida=document.getElementById('ci-bienvenida').value;
   saveCFG();toast('✅ Información guardada. Valeria ya la usa.');saveCFGFirestore();
 }
 
@@ -659,7 +664,7 @@ function saveHorarios(){
     if(n&&n.value) CFG.horarios.push({n:n.value,h:h?h.value:'',d:d?d.value:''});
   });
   CFG.horarioExtra=document.getElementById('horExtra').value;
-  saveCFG();toast('✅ Horarios guardados. Valeria los usa automáticamente.');
+  saveCFG();toast('✅ Horarios guardados. Valeria los usa automáticamente.');saveCFGFirestore();
 }
 function addTurno(){
   var d=document.createElement('div');d.className='ri';
@@ -706,7 +711,7 @@ function saveFAQ(){
     var kw=item.querySelector('.fkw'),r=item.querySelector('.fresp');
     if(kw&&kw.value.trim()) CFG.faq.push({keywords:kw.value.trim(),respuesta:r?r.value:''});
   });
-  saveCFG();toast('✅ FAQ guardada. Valeria ya responde con la info actualizada.');
+  saveCFG();toast('✅ FAQ guardada. Valeria ya responde con la info actualizada.');saveCFGFirestore();
 }
 
 // ─────────────────────────────────────
