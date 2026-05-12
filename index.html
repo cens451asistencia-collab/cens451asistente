@@ -659,6 +659,7 @@ function renderQR(p){
 // ── CHAT ──
 function getReply(msg){
   var m=msg.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+  var R=CFG.respuestas||{};
 
   // Respuestas por perfil docente
   if(PROFILE==='docente'){
@@ -677,8 +678,9 @@ function getReply(msg){
     }
   }
 
-  // Respuestas dinámicas con CONFIG
+  // Horarios
   if(m.includes('horario')||m.includes('turno')||m.includes('hora')){
+    if(R.horarios) return R.horarios+(CFG.horarioExtra?'<br>ℹ️ '+CFG.horarioExtra:'');
     var hs=CFG.horarios||[];
     if(!hs.length) return 'Consultá los horarios en secretaría o llamanos al 11 5312 6676.';
     var t='Los horarios del CENS 451 son:<br>';
@@ -687,8 +689,10 @@ function getReply(msg){
     return t;
   }
 
+  // Sedes
   if(m.includes('sede')||m.includes('cerca')||m.includes('donde')||m.includes('ubicac')||m.includes('vivo')||m.includes('barrio')||m.includes('localidad')){
-    return '📍 Tenemos <b>5 sedes</b> en La Matanza:<br>⭐ <b>Sede Central:</b> Camacuá 3407 · Villa Luzuriaga<br>📍 <b>Anexo Veteranos:</b> Bolívar 1682 · Ramos Mejía<br>📍 <b>Anexo Torero:</b> Coronel Aguirre 2784 · Rafael Castillo<br>📍 <b>Anexo Atalaya:</b> Del Bañado 10 · Rafael Castillo<br>📍 <b>Anexo Canadá:</b> Canadá 4664 · San Justo<br><br>Decime <b>en qué localidad vivís</b> y te digo cuál te queda más cerca 🗺️';
+    var sedeResp=R.sedes||'📍 Tenemos <b>5 sedes</b> en La Matanza:<br>⭐ <b>Sede Central:</b> Camacuá 3407 · Villa Luzuriaga<br>📍 <b>Anexo Veteranos:</b> Bolívar 1682 · Ramos Mejía<br>📍 <b>Anexo Torero:</b> Coronel Aguirre 2784 · Rafael Castillo<br>📍 <b>Anexo Atalaya:</b> Del Bañado 10 · Rafael Castillo<br>📍 <b>Anexo Canadá:</b> Canadá 4664 · San Justo';
+    return sedeResp+'<br><br>Decime <b>en qué localidad vivís</b> y te digo cuál te queda más cerca 🗺️';
   }
 
   // Detectar localidad en mensaje
@@ -707,30 +711,44 @@ function getReply(msg){
   };
   for(var i=0;i<barrios.length;i++){if(m.includes(barrios[i])){return '📍 Para quienes viven en <b>'+barrios[i].replace(/\b\w/g,c=>c.toUpperCase())+'</b>, la sede más cercana es:<br><b>'+sedeMap[barrios[i]]+'</b><br><br>¿Querés que te explique cómo inscribirte? 📋';}}
 
+  // Inscripción
   if(m.includes('inscri')||m.includes('anot')){
-    return 'Para inscribirte al CENS 451:<br>✅ Completá el formulario online haciendo clic en <b>"Preinscripción"</b> arriba.<br>📅 <b>Período:</b> '+(CFG.periodo||'Todo el año con cupo disponible')+'<br><br>Una vez enviado, te contactamos para confirmar tu vacante.';
+    return R.inscripcion||'Para inscribirte al CENS 451:<br>✅ Completá el formulario online haciendo clic en <b>Preinscripción</b> arriba.<br>📅 <b>Período:</b> '+(CFG.periodo||'Todo el año con cupo disponible')+'<br><br>Una vez enviado, te contactamos para confirmar tu vacante.';
   }
+
+  // Documentos
   if(m.includes('document')||m.includes('necesit')||m.includes('traer')){
-    var docs=CFG.documentos||['DNI (original y fotocopia)','Certificado de estudios previos','','Constancia de domicilio'];
-    return 'Para inscribirte necesitás:<br>'+docs.map(function(d){return'📄 '+d}).join('<br>')+(CFG.docsExtra?'<br><br>ℹ️ '+CFG.docsExtra:'');
+    if(R.documentos) return R.documentos+(CFG.docsExtra?'<br><br>ℹ️ '+CFG.docsExtra:'');
+    var docs=CFG.documentos||['DNI (original y fotocopia)','Certificado de estudios previos','Constancia de domicilio'];
+    return 'Para inscribirte necesitás:<br>'+docs.filter(Boolean).map(function(d){return'📄 '+d}).join('<br>')+(CFG.docsExtra?'<br><br>ℹ️ '+CFG.docsExtra:'');
   }
+
+  // Gratuito
   if(m.includes('gratis')||m.includes('gratuito')||m.includes('costo')||m.includes('pago')||m.includes('arancel')||m.includes('cobran')||m.includes('plata')){
-    return '✅ El CENS 451 es completamente <b>gratuito</b>. Es una institución pública del Estado argentino. No hay ningún arancel.';
+    return R.gratuito||'✅ El CENS 451 es completamente <b>gratuito</b>. Es una institución pública del Estado argentino. No hay ningún arancel.';
   }
-  if(m.includes('analitico')||m.includes('titulo')||m.includes('tramit')||m.includes('consultar')||m.includes('disponible')){
+
+  // Analítico
+  if(m.includes('analitico')||m.includes('tramit')||m.includes('consultar')||m.includes('disponible')){
     setTimeout(function(){
-      addMsg('Para consultar tu analítico necesito tu <b>DNI</b> o tu <b>apellido</b>. ¿Podés ingresarlo acá?','bot');
+      addMsg(R.analitico||'Para consultar tu analítico necesito tu <b>DNI</b> o tu <b>apellido</b>. ¿Podés ingresarlo acá?','bot');
       window._esperandoBusqueda=true;
     },400);
     return null;
   }
+
+  // Contacto
   if(m.includes('contact')||m.includes('telefon')||m.includes('llamar')||m.includes('whats')){
-    return '📞 <b>Tel/WhatsApp:</b> 11 5312 6676<br>📱 <b>Instagram:</b> @cens.451<br>📍 <b>Sede Central:</b> Camacuá 3407, Villa Luzuriaga';
+    return R.contacto||'📞 <b>Tel/WhatsApp:</b> 11 5312 6676<br>📱 <b>Instagram:</b> @cens.451<br>📍 <b>Sede Central:</b> Camacuá 3407, Villa Luzuriaga';
   }
+
+  // Título
   if(m.includes('titulo')||m.includes('diploma')||m.includes('bachiller')){
-    return '🎓 Al completar los 3 años (6 cuatrimestres) obtenés el título de <b>Bachiller para Adultos</b>, con validez nacional en todo el territorio argentino.';
+    return R.titulo||'🎓 Al completar los 3 años (6 cuatrimestres) obtenés el título de <b>Bachiller para Adultos</b>, con validez nacional en todo el territorio argentino.';
   }
-  if(m.includes('hola')||m.includes('buen')) return '¡Hola! 😊 ¿En qué puedo ayudarte hoy?';
+
+  // Saludo
+  if(m.includes('hola')||m.includes('buen')) return R.saludo||'¡Hola! 😊 ¿En qué puedo ayudarte hoy?';
   if(m.includes('gracias')) return '¡De nada! Estoy aquí cuando me necesitás 💙';
 
   // FAQ configurada desde directivo
@@ -740,7 +758,8 @@ function getReply(msg){
       for(var k=0;k<kws.length;k++){if(m.includes(kws[k].trim())){return CFG.faq[j].respuesta;}}
     }
   }
-  return 'Puedo ayudarte con <b>horarios</b>, <b>sedes</b>, <b>inscripción</b>, <b>documentos</b>, <b>analíticos</b> y más. ¿Qué necesitás?';
+
+  return R.default||'Puedo ayudarte con <b>horarios</b>, <b>sedes</b>, <b>inscripción</b>, <b>documentos</b>, <b>analíticos</b> y más. ¿Qué necesitás?';
 }
 
 function addMsg(t,w){
