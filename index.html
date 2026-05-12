@@ -594,7 +594,16 @@ var _cfgPromise = (async function(){
   try {
     var snap = await getDoc(doc(db,'config','main'));
     if(snap.exists()){
-      Object.assign(CFG, snap.data());
+      var data = snap.data();
+      // Convertir chips de objetos Firestore a arrays
+      if(data.chips){
+        Object.keys(data.chips).forEach(function(perfil){
+          data.chips[perfil]=(data.chips[perfil]||[]).map(function(ch){
+            return [ch.label||'', ch.msg||''];
+          });
+        });
+      }
+      Object.assign(CFG, data);
       window.VALERIA_CFG = CFG;
       console.log('CFG cargado desde Firestore');
     }
