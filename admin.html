@@ -161,8 +161,8 @@ body{font-family:'DM Sans',sans-serif;background:#eef2f8;color:var(--ink);min-he
     </div>
 
     <div class="lf"><label>Usuario</label><input type="text" id="lu" placeholder="usuario"></div>
-    <div class="lf"><label>Contraseña</label><input type="password" id="lp" placeholder="••••••" onkeydown="if(event.key==='Enter')doLogin()"></div>
-    <button class="btn-login" onclick="doLogin()">Ingresar →</button>
+    <div class="lf"><label>Contraseña</label><input type="password" id="lp" placeholder="••••••" onkeydown="if(event.key==='Enter')window.doLogin()"></div>
+    <button class="btn-login" onclick="window.doLogin()">Ingresar →</button>
     <div class="login-err" id="lErr">Usuario o contraseña incorrectos.</div>
     
   </div>
@@ -551,7 +551,7 @@ var CFG={horarios:[{n:'Tarde',h:'14:00 a 18:00 hs',d:'Lunes a viernes'},{n:'Noch
   documentos:'Para inscribirte necesitás:<br>📄 DNI (original y fotocopia)<br>📄 Certificado de estudios previos<br>📄 Constancia de domicilio',
   analitico:'Para consultar tu analítico necesito tu <b>DNI</b> o tu <b>apellido</b>. ¿Podés ingresarlo acá?',
   saludo:'¡Hola! 😊 ¿En qué puedo ayudarte hoy?',
-  default:'Puedo ayudarte con <b>horarios</b>, <b>sedes</b>, <b>inscripción</b>, <b>documentos</b>, <b>analíticos</b> y más. ¿Qué necesitás?'
+  'default':'Puedo ayudarte con <b>horarios</b>, <b>sedes</b>, <b>inscripción</b>, <b>documentos</b>, <b>analíticos</b> y más. ¿Qué necesitás?'
 },chips:{alumno:[['⏰ Horarios','¿Cuáles son los horarios?'],['📍 Sede más cercana','¿Qué sede me queda más cerca?'],['📄 Documentos','¿Qué documentos necesito?'],['💰 Es gratuito?','¿El CENS es gratuito?'],['📋 Inscribirme','¿Cómo me inscribo?']],egresado:[['🔍 Mi analítico','¿Cómo consulto mi analítico?'],['📃 Retiro en papel','¿Cómo retiro el analítico en papel?'],['📞 Contacto','¿Cómo los contacto?']],docente:[['📝 Proyecto anual','¿Cómo envío el proyecto anual?'],['🔄 Actualizar datos','¿Cómo actualizo mis datos?'],['📁 Archivos','¿Qué archivos subió la directora?'],['📞 Contacto','¿Cómo los contacto?']]}};
 var ANALITICOS={parciales:[],digital:[],papel:[]};
 var INSCR=[];
@@ -764,7 +764,7 @@ var RESP_LABELS = {
   documentos: '📄 Documentos necesarios',
   analitico:  '🔍 Consulta analítico',
   saludo:     '👋 Saludo inicial',
-  default:    '❓ Respuesta por defecto'
+  'default':  '❓ Respuesta por defecto'
 };
 function renderRespList(){
   var c=document.getElementById('respList');if(!c)return;c.innerHTML='';
