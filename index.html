@@ -569,7 +569,7 @@ var SEDES = {
 
 // ── FIREBASE ──
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getFirestore, collection, addDoc, getDocs, query, where } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { getFirestore, collection, addDoc, getDocs, query, where, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyCxMh6pKHWr9YM_kXlyS26fHOAGHh1Epqc",
@@ -588,12 +588,18 @@ var ANALITICOS = {parciales:[], digital:[], papel:[]};
 // ── CONFIG desde Firestore ──
 var CFG = {horarios:[{n:'Tarde',h:'14:00–18:00 hs',d:'Lunes a viernes'},{n:'Noche',h:'18:00–22:00 hs',d:'Lunes a viernes'}], faq:[], docsLinks:[], archivosDocente:[], chips:{alumno:[['⏰ Horarios','¿Cuáles son los horarios?'],['📍 Sede más cercana','¿Qué sede me queda más cerca?'],['📄 Documentos','¿Qué documentos necesito?'],['💰 Es gratuito?','¿El CENS es gratuito?'],['📋 Inscribirme','¿Cómo me inscribo?']],egresado:[['🔍 Mi analítico','¿Cómo consulto mi analítico?'],['📃 Retiro en papel','¿Cómo retiro el analítico en papel?'],['📞 Contacto','¿Cómo los contacto?']],docente:[['📝 Proyecto anual','¿Cómo envío el proyecto anual?'],['🔄 Actualizar datos','¿Cómo actualizo mis datos?'],['📁 Archivos','¿Qué archivos subió la directora?'],['📞 Contacto','¿Cómo los contacto?']]}};
 window.VALERIA_CFG = CFG;
-// Cargar CFG desde Firestore
-(async function(){
+var CFG_LISTO = false;
+// Cargar CFG desde Firestore al inicio
+var _cfgPromise = (async function(){
   try {
-    var snap = await getDocs(collection(db,'config'));
-    snap.docs.forEach(function(d){ if(d.id==='main') { Object.assign(CFG, d.data()); window.VALERIA_CFG=CFG; }});
-  } catch(e){ console.log('CFG desde defaults'); }
+    var snap = await getDoc(doc(db,'config','main'));
+    if(snap.exists()){
+      Object.assign(CFG, snap.data());
+      window.VALERIA_CFG = CFG;
+      console.log('CFG cargado desde Firestore');
+    }
+  } catch(e){ console.log('CFG desde defaults:', e); }
+  CFG_LISTO = true;
 })();
 
 // ── INSCRIPCIONES ──
@@ -766,10 +772,11 @@ function addMsg(t,w){
   var c=document.getElementById('chatMsgs'),d=document.createElement('div');
   d.className='msg msg-'+w;d.innerHTML=t;c.appendChild(d);c.scrollTop=c.scrollHeight;
 }
-function sendMsg(){
+async function sendMsg(){
   var i=document.getElementById('chatInp'),v=i.value.trim();
   if(!v)return;
   addMsg(v,'user');i.value='';
+  if(!CFG_LISTO) await _cfgPromise;
   // Si Valeria está esperando DNI/apellido para buscar
   if(window._esperandoBusqueda){
     window._esperandoBusqueda=false;
@@ -787,8 +794,9 @@ function sendMsg(){
   var reply=getReply(v);
   if(reply!==null) setTimeout(function(){addMsg(reply,'bot')},380);
 }
-function sendQuick(t){
+async function sendQuick(t){
   addMsg(t,'user');
+  if(!CFG_LISTO) await _cfgPromise;
   var reply=getReply(t);
   if(reply!==null) setTimeout(function(){addMsg(reply,'bot')},380);
 }
