@@ -364,7 +364,7 @@ body{font-family:'DM Sans',sans-serif;background:#f0f4fa;color:var(--ink);min-he
         </div>
       </div>
       <div class="chat-msgs" id="chatMsgs">
-        <div class="msg msg-bot">¡Hola! 👋 Soy <b>Valeria</b>. Antes de continuar, ¿con cuál de estas opciones te identificás?</div>
+        <div class="msg msg-bot" id="msgBienvenida">¡Hola! 👋 Soy <b>Valeria</b>. Antes de continuar, ¿con cuál de estas opciones te identificás?</div>
       </div>
       <div class="chat-profile">
         <p>Soy...</p>
@@ -605,6 +605,11 @@ var _cfgPromise = (async function(){
       }
       Object.assign(CFG, data);
       window.VALERIA_CFG = CFG;
+      // Aplicar mensaje de bienvenida si está configurado
+      if(CFG.bienvenida && CFG.bienvenida.trim()){
+        var el=document.getElementById('msgBienvenida');
+        if(el) el.innerHTML=CFG.bienvenida;
+      }
       console.log('CFG cargado desde Firestore');
     }
   } catch(e){ console.log('CFG desde defaults:', e); }
