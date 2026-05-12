@@ -585,9 +585,16 @@ const db = getFirestore(app);
 // ── ANALÍTICOS (desde Firestore) ──
 var ANALITICOS = {parciales:[], digital:[], papel:[]};
 
-// ── CONFIG desde directivo (sigue en localStorage por ahora) ──
-var CFG = {horarios:[{n:'Tarde',h:'14:00–18:00 hs',d:'Lunes a viernes'},{n:'Noche',h:'18:00–22:00 hs',d:'Lunes a viernes'}], faq:[], docsLinks:[], archivosDocente:[]};
-try { var c = localStorage.getItem('cens451_cfg'); if(c) CFG = JSON.parse(c); } catch(e){}
+// ── CONFIG desde Firestore ──
+var CFG = {horarios:[{n:'Tarde',h:'14:00–18:00 hs',d:'Lunes a viernes'},{n:'Noche',h:'18:00–22:00 hs',d:'Lunes a viernes'}], faq:[], docsLinks:[], archivosDocente:[], chips:{alumno:[['⏰ Horarios','¿Cuáles son los horarios?'],['📍 Sede más cercana','¿Qué sede me queda más cerca?'],['📄 Documentos','¿Qué documentos necesito?'],['💰 Es gratuito?','¿El CENS es gratuito?'],['📋 Inscribirme','¿Cómo me inscribo?']],egresado:[['🔍 Mi analítico','¿Cómo consulto mi analítico?'],['📃 Retiro en papel','¿Cómo retiro el analítico en papel?'],['📞 Contacto','¿Cómo los contacto?']],docente:[['📝 Proyecto anual','¿Cómo envío el proyecto anual?'],['🔄 Actualizar datos','¿Cómo actualizo mis datos?'],['📁 Archivos','¿Qué archivos subió la directora?'],['📞 Contacto','¿Cómo los contacto?']]}};
+window.VALERIA_CFG = CFG;
+// Cargar CFG desde Firestore
+(async function(){
+  try {
+    var snap = await getDocs(collection(db,'config'));
+    snap.docs.forEach(function(d){ if(d.id==='main') { Object.assign(CFG, d.data()); window.VALERIA_CFG=CFG; }});
+  } catch(e){ console.log('CFG desde defaults'); }
+})();
 
 // ── INSCRIPCIONES ──
 var INSCR = [];
@@ -640,6 +647,10 @@ function renderQR(p){
     egresado:[['🔍 Mi analítico','¿Cómo consulto mi analítico?'],['📃 Retiro en papel','¿Cómo retiro el analítico en papel?'],['📞 Contacto','¿Cómo los contacto?']],
     docente:[['📝 Proyecto anual','¿Cómo envío el proyecto anual?'],['🔄 Actualizar datos','¿Cómo actualizo mis datos?'],['📁 Archivos','¿Qué archivos subió la directora?'],['📞 Contacto','¿Cómo los contacto?']]
   };
+  // Usar chips desde Firestore si están disponibles
+  if(window.VALERIA_CFG && window.VALERIA_CFG.chips && window.VALERIA_CFG.chips[p]){
+    qrs[p]=window.VALERIA_CFG.chips[p];
+  }
   var container=document.getElementById('chatQR');
   var list=qrs[p]||[];
   container.innerHTML=list.map(function(q){return'<button class="qr" onclick="sendQuick(\''+q[1]+'\')">'+q[0]+'</button>'}).join('');
@@ -700,7 +711,7 @@ function getReply(msg){
     return 'Para inscribirte al CENS 451:<br>✅ Completá el formulario online haciendo clic en <b>"Preinscripción"</b> arriba.<br>📅 <b>Período:</b> '+(CFG.periodo||'Todo el año con cupo disponible')+'<br><br>Una vez enviado, te contactamos para confirmar tu vacante.';
   }
   if(m.includes('document')||m.includes('necesit')||m.includes('traer')){
-    var docs=CFG.documentos||['DNI (original y fotocopia)','Certificado de estudios previos','2 fotos 4x4','Constancia de domicilio'];
+    var docs=CFG.documentos||['DNI (original y fotocopia)','Certificado de estudios previos','','Constancia de domicilio'];
     return 'Para inscribirte necesitás:<br>'+docs.map(function(d){return'📄 '+d}).join('<br>')+(CFG.docsExtra?'<br><br>ℹ️ '+CFG.docsExtra:'');
   }
   if(m.includes('gratis')||m.includes('gratuito')||m.includes('costo')||m.includes('pago')||m.includes('arancel')||m.includes('cobran')||m.includes('plata')){
