@@ -285,6 +285,16 @@ body{font-family:'DM Sans',sans-serif;background:#eef2f8;color:var(--ink);min-he
         </div>
       </div>
 
+      <!-- ────── PANEL: RESPUESTAS DE VALERIA ────── -->
+      <div id="pan-respuestas" class="panel">
+        <div class="card">
+          <h3>🤖 Respuestas de Valeria</h3>
+          <p class="desc">Editá el texto exacto que Valeria responde ante cada consulta. Podés usar &lt;b&gt;negrita&lt;/b&gt; y &lt;br&gt; para saltos de línea.</p>
+          <div id="respList"></div>
+          <button class="btn-s" style="margin-top:14px" onclick="saveRespuestas()">💾 Guardar respuestas</button>
+        </div>
+      </div>
+
       <!-- ────── PANEL: CHIPS DE VALERIA ────── -->
       <div id="pan-chips" class="panel">
         <div class="card">
@@ -472,6 +482,7 @@ var NAV_ITEMS = {
     {id:'horarios',ic:'⏰',lbl:'Horarios y turnos'},
     {id:'docs',ic:'📄',lbl:'Documentos requeridos'},
     {id:'faq',ic:'💬',lbl:'Preguntas frecuentes'},
+    {id:'respuestas',ic:'🤖',lbl:'Respuestas Valeria'},
     {id:'chips',ic:'🏷️',lbl:'Chips de Valeria'},
     {id:'recursos',ic:'👩‍🏫',lbl:'Recursos docentes'},
     {sec:'Gestión'},
@@ -530,7 +541,18 @@ function goPanel(id){
 // ─────────────────────────────────────
 // STORAGE
 // ─────────────────────────────────────
-var CFG={horarios:[{n:'Tarde',h:'14:00 a 18:00 hs',d:'Lunes a viernes'},{n:'Noche',h:'18:00 a 22:00 hs',d:'Lunes a viernes'}],horarioExtra:'',documentos:['DNI (original y fotocopia)','Certificado de estudios previos','Constancia de domicilio'],docsExtra:'',faq:[],proyectoLink:'',datosLink:'',archivosDocente:[],periodo:'Todo el año con cupo disponible',chips:{alumno:[['⏰ Horarios','¿Cuáles son los horarios?'],['📍 Sede más cercana','¿Qué sede me queda más cerca?'],['📄 Documentos','¿Qué documentos necesito?'],['💰 Es gratuito?','¿El CENS es gratuito?'],['📋 Inscribirme','¿Cómo me inscribo?']],egresado:[['🔍 Mi analítico','¿Cómo consulto mi analítico?'],['📃 Retiro en papel','¿Cómo retiro el analítico en papel?'],['📞 Contacto','¿Cómo los contacto?']],docente:[['📝 Proyecto anual','¿Cómo envío el proyecto anual?'],['🔄 Actualizar datos','¿Cómo actualizo mis datos?'],['📁 Archivos','¿Qué archivos subió la directora?'],['📞 Contacto','¿Cómo los contacto?']]}};
+var CFG={horarios:[{n:'Tarde',h:'14:00 a 18:00 hs',d:'Lunes a viernes'},{n:'Noche',h:'18:00 a 22:00 hs',d:'Lunes a viernes'}],horarioExtra:'',documentos:['DNI (original y fotocopia)','Certificado de estudios previos','Constancia de domicilio'],docsExtra:'',faq:[],proyectoLink:'',datosLink:'',archivosDocente:[],periodo:'Todo el año con cupo disponible',respuestas:{
+  horarios:'Los horarios del CENS 451 son:<br>🕐 <b>Turno Tarde:</b> 14:00 a 18:00 hs · Lunes a viernes<br>🕐 <b>Turno Noche:</b> 18:00 a 22:00 hs · Lunes a viernes',
+  sedes:'📍 Tenemos <b>5 sedes</b> en La Matanza:<br>⭐ <b>Sede Central:</b> Camacuá 3407 · Villa Luzuriaga<br>📍 <b>Anexo Veteranos:</b> Bolívar 1682 · Ramos Mejía<br>📍 <b>Anexo Torero:</b> Coronel Aguirre 2784 · Rafael Castillo<br>📍 <b>Anexo Atalaya:</b> Del Bañado 10 · Rafael Castillo<br>📍 <b>Anexo Canadá:</b> Canadá 4664 · San Justo',
+  inscripcion:'Para inscribirte al CENS 451:<br>✅ Completá el formulario online haciendo clic en <b>Preinscripción</b> arriba.<br>📅 <b>Período:</b> Todo el año con cupo disponible<br><br>Una vez enviado, te contactamos para confirmar tu vacante.',
+  gratuito:'✅ El CENS 451 es completamente <b>gratuito</b>. Es una institución pública del Estado argentino. No hay ningún arancel.',
+  contacto:'📞 <b>Tel/WhatsApp:</b> 11 5312 6676<br>📱 <b>Instagram:</b> @cens.451<br>📍 <b>Sede Central:</b> Camacuá 3407, Villa Luzuriaga',
+  titulo:'🎓 Al completar los 3 años (6 cuatrimestres) obtenés el título de <b>Bachiller para Adultos</b>, con validez nacional en todo el territorio argentino.',
+  documentos:'Para inscribirte necesitás:<br>📄 DNI (original y fotocopia)<br>📄 Certificado de estudios previos<br>📄 Constancia de domicilio',
+  analitico:'Para consultar tu analítico necesito tu <b>DNI</b> o tu <b>apellido</b>. ¿Podés ingresarlo acá?',
+  saludo:'¡Hola! 😊 ¿En qué puedo ayudarte hoy?',
+  default:'Puedo ayudarte con <b>horarios</b>, <b>sedes</b>, <b>inscripción</b>, <b>documentos</b>, <b>analíticos</b> y más. ¿Qué necesitás?'
+},chips:{alumno:[['⏰ Horarios','¿Cuáles son los horarios?'],['📍 Sede más cercana','¿Qué sede me queda más cerca?'],['📄 Documentos','¿Qué documentos necesito?'],['💰 Es gratuito?','¿El CENS es gratuito?'],['📋 Inscribirme','¿Cómo me inscribo?']],egresado:[['🔍 Mi analítico','¿Cómo consulto mi analítico?'],['📃 Retiro en papel','¿Cómo retiro el analítico en papel?'],['📞 Contacto','¿Cómo los contacto?']],docente:[['📝 Proyecto anual','¿Cómo envío el proyecto anual?'],['🔄 Actualizar datos','¿Cómo actualizo mis datos?'],['📁 Archivos','¿Qué archivos subió la directora?'],['📞 Contacto','¿Cómo los contacto?']]}};
 var ANALITICOS={parciales:[],digital:[],papel:[]};
 var INSCR=[];
 
@@ -602,6 +624,7 @@ function loadFieldsFromCFG(){
   if(document.getElementById('docsExtra')) document.getElementById('docsExtra').value=CFG.docsExtra||'';
   renderArchList();
   renderChipList();
+  renderRespList();
   applyRoleRestrictions();
 }
 
@@ -729,6 +752,33 @@ function renderArchList(){
 function addArch(){CFG.archivosDocente.push({nombre:'',url:'',desc:''});renderArchList();}
 function delArch(i){CFG.archivosDocente.splice(i,1);renderArchList();}
 function saveArchivos(){saveCFG();toast('✅ Archivos guardados. Valeria los muestra a los docentes.');saveCFGFirestore();}
+
+// ── RESPUESTAS DE VALERIA ──
+var RESP_LABELS = {
+  horarios:   '⏰ Horarios',
+  sedes:      '📍 Sedes',
+  inscripcion:'📋 Inscripción',
+  gratuito:   '💰 Es gratuito',
+  contacto:   '📞 Contacto',
+  titulo:     '🎓 Título/Diploma',
+  documentos: '📄 Documentos necesarios',
+  analitico:  '🔍 Consulta analítico',
+  saludo:     '👋 Saludo inicial',
+  default:    '❓ Respuesta por defecto'
+};
+function renderRespList(){
+  var c=document.getElementById('respList');if(!c)return;c.innerHTML='';
+  if(!CFG.respuestas) CFG.respuestas={};
+  Object.keys(RESP_LABELS).forEach(function(key){
+    var val=CFG.respuestas[key]||'';
+    var d=document.createElement('div');
+    d.style.cssText='margin-bottom:16px';
+    d.innerHTML='<label style="font-weight:600;font-size:13px;display:block;margin-bottom:4px">'+RESP_LABELS[key]+'</label>'
+      +'<textarea rows="3" style="width:100%;font-size:12px;padding:8px;border-radius:6px;border:1px solid var(--slate2);font-family:monospace;resize:vertical" oninput="CFG.respuestas[''+key+'']=this.value">'+val+'</textarea>';
+    c.appendChild(d);
+  });
+}
+function saveRespuestas(){saveCFG();saveCFGFirestore();toast('✅ Respuestas guardadas. Valeria ya las usa.');}
 
 // ── CHIPS ──
 var currentChipTab='alumno';
@@ -891,7 +941,7 @@ window.setCFGArch=setCFGArch;
 window.saveInfo=saveInfo;window.saveHorarios=saveHorarios;window.addTurno=addTurno;
 window.saveDocs=saveDocs;window.addDocReq=addDocReq;window.addFAQ=addFAQ;window.delFAQ=delFAQ;window.renderFAQList=renderFAQList;window.saveFAQ=saveFAQ;
 window.saveLinks=saveLinks;window.saveArchivos=saveArchivos;
-window.addArch=addArch;window.delArch=delArch;window.renderArchList=renderArchList;window.applyRoleRestrictions=applyRoleRestrictions;window.switchChipTab=switchChipTab;window.addChip=addChip;window.delChip=delChip;window.saveChips=saveChips;window.saveCFGFirestore=saveCFGFirestore;
+window.addArch=addArch;window.delArch=delArch;window.renderArchList=renderArchList;window.applyRoleRestrictions=applyRoleRestrictions;window.switchChipTab=switchChipTab;window.addChip=addChip;window.delChip=delChip;window.saveChips=saveChips;window.saveRespuestas=saveRespuestas;window.renderRespList=renderRespList;window.saveCFGFirestore=saveCFGFirestore;
 window.loadAnalitico=loadAnalitico;window.renderPreview=renderPreview;
 window.renderInscr=renderInscr;window.exportInscr=exportInscr;
 window.renderDash=renderDash;window.loadAll=loadAll;
