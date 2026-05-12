@@ -568,7 +568,17 @@ function loadAll(){
 function saveCFG(){try{localStorage.setItem('cens451_cfg',JSON.stringify(CFG));}catch(e){}}
 async function saveCFGFirestore(){
   try{
-    await setDoc(doc(db,'config','main'),CFG);
+    // Convertir chips (arrays anidados) a objetos para Firestore
+    var chipsFS={};
+    if(CFG.chips){
+      Object.keys(CFG.chips).forEach(function(perfil){
+        chipsFS[perfil]=(CFG.chips[perfil]||[]).map(function(ch,i){
+          return {label:ch[0]||'',msg:ch[1]||''};
+        });
+      });
+    }
+    var data=Object.assign({},CFG,{chips:chipsFS});
+    await setDoc(doc(db,'config','main'),data);
     console.log('CFG guardado en Firestore');
   }catch(e){console.error('Error guardando CFG:',e);}
 }
